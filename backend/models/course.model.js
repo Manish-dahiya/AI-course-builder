@@ -1,0 +1,40 @@
+const mongoose = require("mongoose");
+
+// Chapter Schema
+const chapterSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+});
+
+// Module Schema
+const moduleSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  chapters: [chapterSchema], // array of chapters
+});
+
+// Course Schema
+const courseSchema = new mongoose.Schema({
+  courseName: {
+    type: String,
+    required: true,
+  },
+  modules: [moduleSchema], // array of modules
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Model
+const Course = mongoose.model("Course", courseSchema);
+
+module.exports = Course;
