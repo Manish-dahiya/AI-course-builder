@@ -6,10 +6,14 @@ const chapterSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  content: {
+  summary: {
     type: String,
     required: true,
   },
+  aiContent:{
+    type:String,
+    default:"",
+  }
 });
 
 // Module Schema
