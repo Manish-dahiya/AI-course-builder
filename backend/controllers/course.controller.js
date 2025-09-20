@@ -131,8 +131,22 @@ async function getChapterContent(req,res){
     });  
 }
 
+async function getCourseById(req,res){
+  const {id}= req.params;
+
+  const currentCourse= await Course.findById(id);
+
+  if(!currentCourse){
+    return res.json({"coursePlan":"no course found with current id"});
+
+  }
+
+  console.log(currentCourse);
+  return res.json({"coursePlan":currentCourse});
+}
 
 module.exports={
   generateCoursePlan,
-  getChapterContent
+  getChapterContent,
+  getCourseById
 }
