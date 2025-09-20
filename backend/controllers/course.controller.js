@@ -26,7 +26,9 @@ Topic: ${topic}
 
  async function generateCoursePlan (req, res){
   try {
-    const { prompt } = req.body;
+    const  {prompt}  = req.body;
+
+    console.log("yes",prompt); 
 
     if (!prompt.toLowerCase().includes("course")) {
       return res.json({

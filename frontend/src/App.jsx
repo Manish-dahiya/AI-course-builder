@@ -3,13 +3,45 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { useEffect } from 'react';
+import CourseCard from '../components/CourseCard';
+import { BrowserRouter,Routes , Route } from 'react-router-dom';
+import Home from '../pages/Home';
+import CoursePage from '../pages/CoursePage';
 
 function App() {
   const [prompt, setPrompt] = useState("");
+  const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
+  const [isLoading,setIsLoading]= useState(false)
 
-  const handleBuildCourse = () => {
+  const handleBuildCourse = async() => {
     if (!prompt) return alert("Please enter a course idea!");
-    console.log("Building course for:", prompt);
+    
+    try{
+      setIsLoading(true)
+
+        const res= await  fetch(`http://localhost:5000/api/courses/generate-course`, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify( {"prompt":prompt})
+
+        } );
+
+        if (!res.ok) throw new Error("Failed to generate course");
+
+        const data= await res.json();
+        setCourseData(data)
+
+        console.log("aa gya data bhai frontend pe bhi",data);
+
+    }
+    catch(error){
+       console.error("frontend error :",error );
+      alert("Something went wrong while building the course");
+    }
+
+    setIsLoading(false);
     setPrompt("");
   };
 
@@ -18,30 +50,18 @@ function App() {
       setPrompt(value);
   }
 
-  // useEffect(()=>{ console.log(prompt) },[prompt])
+
+  useEffect(()=>{ console.log("useeffect") },[courseData])
 
   return (
   <>
-      <div className=" bg-blue-100  items-center justify-center p-4">
-        <h1 className="text-xl font-bold mb-4 text-center">AI Course Builder</h1>
-        <br />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home></Home>}  > </Route>
+          <Route path="course/:id" element={<CoursePage/>} ></Route>          
 
-        <input
-          type="text"
-          placeholder="Enter your course idea..."
-          name="course_query"
-          value={prompt}
-          onChange={(e)=>handleChange(e)}
-          className="w-full p-1 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        <button
-          onClick={handleBuildCourse}
-          className="w-full bg-blue-600 text-white font-semibold p-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Build Course
-        </button>
-      </div>
+        </Routes>
+      </BrowserRouter>
   </>
    
   );

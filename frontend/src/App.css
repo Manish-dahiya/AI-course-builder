@@ -40,3 +40,45 @@
 .read-the-docs {
   color: #888;
 }
+
+.skeleton-text {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #9ca3af 25%,   /* darker gray */
+    #bbc0c9 37%,   /* lighter gray */
+    #9ca3af 63%
+  );
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text; /* add standard property */
+  -webkit-text-fill-color: transparent;
+  animation: skeleton-loading 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+.spin-loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;       /* light gray */
+  border-top: 2px solid #3b82f6;   /* blue top for effect */
+  border-radius: 50%;
+  animation: rotateAni 1s linear infinite;
+}
+
+@keyframes rotateAni {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
