@@ -107,9 +107,7 @@ async function getChapterContent(req,res){
 
   if(chapter.aiContent.length>0){
            return res.json({ 
-            index: chapterIndex + 1,  // +1 to make it 1-based index
-            title: chapter.title,
-            aiContent: chapter.aiContent 
+            course
         });
   }
 
@@ -125,9 +123,7 @@ async function getChapterContent(req,res){
 // 
   // Return the chapter info including index
     res.json({ 
-        index: chapterIndex + 1,
-        title: chapter.title,
-        aicontent: aiContent 
+       course
     });  
 }
 
