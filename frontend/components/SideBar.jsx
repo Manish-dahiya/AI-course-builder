@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 
-function SideBar({course, fetchChapterContent, setShowSidebar, showSidebar }) {
-    const [openModuleIndex, setOpenModuleIndex] = useState(null);
+function SideBar({ openModuleIndex  ,setOpenModuleIndex, course, fetchChapterContent, setShowSidebar, showSidebar }) {
     const toggleModule = (index) => {
         setOpenModuleIndex(openModuleIndex === index ? null : index);
     };
@@ -36,7 +35,7 @@ function SideBar({course, fetchChapterContent, setShowSidebar, showSidebar }) {
                             {module.chapters?.map((chapter, chapIndex) => (
                                 <li
                                     key={chapIndex}
-                                    
+
                                     className="py-2 px-1 text-sm cursor-pointer truncate rounded mb-2  hover:bg-[#5f697b]"
                                     onClick={() => onSelectChapter(chapter, chapIndex)}
                                 >

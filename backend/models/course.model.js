@@ -13,6 +13,10 @@ const chapterSchema = new mongoose.Schema({
   aiContent:{
     type:String,
     default:"",
+  },
+  videoUrl:{
+    type:String,
+    default:""
   }
 });
 

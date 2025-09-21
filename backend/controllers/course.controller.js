@@ -1,7 +1,7 @@
 const express = require("express");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Course= require("../models/course.model");
-
+const ytSearch= require('yt-search');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -145,10 +145,49 @@ async function getAllCourses(req,res){
   const allCourses= await Course.find(); //<--fetches all courses from the database and returns an array
   return res.json({"allCourses":allCourses});
 }
+async function getChapterVideo(req, res) {
+  const { courseId, moduleIndex, chapterId } = req.body;
+  if (!courseId || moduleIndex === undefined || !chapterId) {
+    // if(!courseId)console.log("ab courseId ke kya hogaya");
+    // if(moduleIndex==undefined)console.log("ab moduleIndex ke kya hogaya");
+    // if(!chapterId)console.log("ab chapterId ke kya hogaya");
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // fetch real course doc from db
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ error: "Course not found" });
+
+    const chapIndex = course.modules[moduleIndex].chapters.findIndex(
+      ch => ch._id.toString() === chapterId
+    );
+    if (chapIndex === -1) return res.status(404).json({ error: "Chapter not found" });
+
+    const query = course.modules[moduleIndex].chapters[chapIndex].title;
+    const searchResult = await ytSearch(query);
+    const video = searchResult.videos[0];
+    if (!video) return res.status(404).json({ error: "No video found" });
+
+    // save video url
+    course.modules[moduleIndex].chapters[chapIndex].videoUrl = video.url;
+    await course.save();
+
+    res.json({
+      course,
+      chapter: course.modules[moduleIndex].chapters[chapIndex]
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "failed to fetch video" });
+  }
+}
+
 
 module.exports={
   generateCoursePlan,
   getChapterContent,
   getCourseById,
-  getAllCourses
+  getAllCourses,
+  getChapterVideo
 }

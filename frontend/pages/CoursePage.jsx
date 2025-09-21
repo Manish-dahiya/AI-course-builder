@@ -3,15 +3,20 @@ import { useParams } from 'react-router-dom';
 import SideBar from '../components/SideBar';
 import ReactMarkdown from 'react-markdown';
 import ChapterSkeletonLoader from '../components/ChapterSkeletonLoader';
+import ChapterVideoPlayer from '../components/ChapterVideoPlayer';
 
 
 function CoursePage() {
     const { id } = useParams();
+    //can be moved to context
     const [course, setCourse] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState({});
+    const [openModuleIndex, setOpenModuleIndex] = useState(0);
+
     const [showSidebar, setShowSidebar] = useState(true);
     const [expanded, setExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);//for the loading of the chapter content 
+    const [isVideo,setIsVideo]= useState(false);
 
 
     //-------------- Split content by line breaks
@@ -61,6 +66,30 @@ function CoursePage() {
         setIsLoading(false)
     }
 
+    const fetchChapterVideo=async()=>{
+        console.log(openModuleIndex)
+
+       if(selectedChapter?.videoUrl==""){
+         const res= await fetch('http://localhost:5000/api/courses/chapter/get-chapter-video',{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({"courseId":course._id, "moduleIndex":openModuleIndex,"chapterId":selectedChapter._id  })
+        })
+        const data= await res.json();
+        console.log("yes saved!!",data);
+        setCourse(data.course);
+        setSelectedChapter(data.chapter);
+
+       }
+    }
+
+    const handleVideoButtonClick=()=>{
+        setIsVideo(!isVideo);
+       if(isVideo==true)fetchChapterVideo();
+    }
+
 
     useEffect(() => {
         fetchCourse();
@@ -76,7 +105,7 @@ function CoursePage() {
                 className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
             >
-                <SideBar course={course} fetchChapterContent={fetchChapterContent} setShowSidebar={setShowSidebar} showSidebar={showSidebar} />
+                <SideBar openModuleIndex={openModuleIndex} setOpenModuleIndex={setOpenModuleIndex}   course={course} fetchChapterContent={fetchChapterContent} setShowSidebar={setShowSidebar} showSidebar={showSidebar} />
             </div>
 
             <span onClick={() => setShowSidebar(!showSidebar)} className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out
@@ -84,9 +113,23 @@ function CoursePage() {
 
             {/* main content */}
             <div className='text-gray-300 sm:ml-54 md:ml-72  ' >
+              
                 {isLoading ? <ChapterSkeletonLoader /> :
                     <div>
                         <h1 className='font-bold  text-4xl '>{selectedChapter?.title || "No chapter selected"}</h1>
+
+                        {/* youtube video functionality */}
+                        <section id='youtube-video-section ' className='w-full' >
+                            <button className="flex items-center px-4 py-2 bg-[#ff0033] hover:bg-blue-900 text-white font-semibold rounded-md transition-colors duration-300"
+                            onClick={handleVideoButtonClick}
+                            >
+                                Video
+                            </button>
+                            {
+                                <div className={`transition-transform duration-300 ease-in-out  h-72 w-full ${isVideo?'translate-x-0 ':'-translate-x-full hidden'}`} > <ChapterVideoPlayer selectedChapter={selectedChapter}  /> </div>
+                            }
+                        </section>
+
                         <ReactMarkdown
                             components={{
                                 h2: ({ node, ...props }) => (
@@ -133,8 +176,9 @@ function CoursePage() {
                         >
                             {displayedContent || "Content will appear here"}
                         </ReactMarkdown>
-
-
+                        
+                        
+                        
                         {contentLines?.length > 20 && (
                             <button
                                 className="text-blue-500 mt-2 hover:underline"
@@ -143,17 +187,13 @@ function CoursePage() {
                                 {expanded ? 'Read Less' : 'Read More...'}
                             </button>
                         )}
+
                     </div>
 
                 }
-
-
-
-
-
             </div>
 
-
+            
 
         </div>
     );
