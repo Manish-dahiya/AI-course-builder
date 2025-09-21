@@ -51,7 +51,7 @@ function SideBar({ openModuleIndex  ,setOpenModuleIndex, course, fetchChapterCon
                 </div>
             ))}
 
-            <span onClick={() => setShowSidebar(!showSidebar)} className=' sm:hidden' >close</span>
+            <span onClick={() => setShowSidebar(!showSidebar)} className=' sm:hidden cursor-pointer' >close</span>
         </div>
     )
 }

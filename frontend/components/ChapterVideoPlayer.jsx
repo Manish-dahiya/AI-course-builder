@@ -11,7 +11,7 @@ function ChapterVideoPlayer({ selectedChapter }) {
 
     return (
         <div className="w-full h-full mt-3">
-            {!isLoading ? (
+            {!isLoading && selectedChapter?.videoUrl!="" ? (
                 <div
                     id="video-div"
                     className="bg-gray-900 h-64 sm:h-80 md:h-96 w-full rounded-lg shadow-lg"
@@ -29,7 +29,7 @@ function ChapterVideoPlayer({ selectedChapter }) {
             ) : (
                 <div
                     id="video-skeleton"
-                    className="animate-pulse bg-gray-700  w-full h-full   rounded-lg"
+                    className="animate-pulse bg-gray-700 h-64 sm:h-80 md:h-96 w-full   rounded-lg"
                 >
                     {/* Optional inner placeholder elements */}
                     <div className="h-full w-full flex items-center justify-center text-gray-400">
