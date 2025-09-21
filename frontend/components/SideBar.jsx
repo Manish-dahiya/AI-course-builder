@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 function SideBar({course, fetchChapterContent, setShowSidebar, showSidebar }) {
-    const [openModuleIndex, setOpenModuleIndex] = useState(0);
-
+    const [openModuleIndex, setOpenModuleIndex] = useState(null);
     const toggleModule = (index) => {
-        setOpenModuleIndex(openModuleIndex === index ? 0 : index);
+        setOpenModuleIndex(openModuleIndex === index ? null : index);
     };
 
     const onSelectChapter = async (chapter, chapIndex) => {
         await fetchChapterContent(chapter,openModuleIndex,chapIndex);
     }
 
+    // useEffect(()=>{ firstChapterRef.current?.click()},[])
 
     return (
-        <div className="w-52 bg-[#2f3a4f] h-screen p-4 overflow-y-auto shadow-lg text-gray-50">
+        <div className="w-52  md:w-72  bg-[#2f3a4f] h-screen p-4 overflow-y-auto shadow-lg text-gray-50">
             {/* Course Name */}
             <h2 className=" font-bold mb-4">{course.courseName}</h2>
 
@@ -25,17 +25,19 @@ function SideBar({course, fetchChapterContent, setShowSidebar, showSidebar }) {
                         className="cursor-pointer bg-[#2f3a4f] px-2 py-1 rounded  hover:bg-[#5f697b] flex justify-between items-center"
                         onClick={() => toggleModule(index)}
                     >
-                        <span className="text-sm truncate">{module.title}</span>
+                        <span className="text-xl truncate">{module.title}</span>
                         <span>{openModuleIndex === index ? '-' : '+'}</span>
                     </div>
 
-                    {/* Chapters (visible only if module is open) */}
-                    {openModuleIndex === index && (
+                    {/* module chapters if that is opened */ }
+                     <div  className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                        openModuleIndex === index ? "max-h-96 opacity-100 mt-2" : "max-h-0 opacity-0"}`}>
                         <ul className="pl-5 mt-2">
                             {module.chapters?.map((chapter, chapIndex) => (
                                 <li
                                     key={chapIndex}
-                                    className="py-2 px-1 text-small cursor-pointer truncate rounded mb-2  hover:bg-[#5f697b]"
+                                    
+                                    className="py-2 px-1 text-sm cursor-pointer truncate rounded mb-2  hover:bg-[#5f697b]"
                                     onClick={() => onSelectChapter(chapter, chapIndex)}
                                 >
                                     {chapter.title}
@@ -44,7 +46,8 @@ function SideBar({course, fetchChapterContent, setShowSidebar, showSidebar }) {
 
                             ))}
                         </ul>
-                    )}
+                    </div>
+
                     <hr />
                 </div>
             ))}

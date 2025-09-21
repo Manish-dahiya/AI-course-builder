@@ -9,7 +9,9 @@ function Home() {
      const [prompt, setPrompt] = useState("");
       const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
       const [isLoading,setIsLoading]= useState(false)
+      const [allCourses,setAllCourses]= useState(null);
     
+      //api for building the course
       const handleBuildCourse = async() => {
         if (!prompt) return alert("Please enter a course idea!");
         
@@ -41,6 +43,15 @@ function Home() {
         setIsLoading(false);
         setPrompt("");
       };
+
+      //api for fetching all courses
+      const fetchAllCourses=async()=>{
+        const res= await fetch("http://localhost:5000/api/courses/all-courses");
+        const data= await res.json();
+
+        setAllCourses(data.allCourses);
+      }
+      useEffect(()=>{ fetchAllCourses()  },[]) //everytime on load of this page
     
       const handleChange=(e)=>{
           const {name,value}=e.target;
@@ -61,22 +72,30 @@ function Home() {
           name="course_query"
           value={prompt}
           onChange={(e)=>handleChange(e)}
-          className="w-full p-1 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full h-14 p-1 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         /> : <h1 className=' text-gray-400 mb-1 skeleton-text  text-center'>we are creating the best course for you </h1> }
 
         { !isLoading ?  <button
           onClick={handleBuildCourse}
-          className="w-full bg-blue-600 hover:scale-95 transition-transform text-white font-semibold p-2 rounded-lg hover:bg-blue-700 "
+          className="w-full bg-blue-600 hover:scale-95 transition-transform text-white font-semibold h-14 p-3 rounded-lg hover:bg-blue-700 "
         >
           Build Course
         </button>
-        :<button type="button" className='w-full     bg-blue-600 text-white font-semibold p-2 rounded-lg hover:bg-blue-700 ' disabled>
+        :<button type="button" className='w-full     bg-blue-600 text-white font-semibold p-2 h-14 rounded-lg hover:bg-blue-700 ' disabled>
            <span className='flex justify-center items-center gap-4'> <div className='spin-loader' ></div>     </span>  
           </button>
           }
       </div>
-     <div className="   items-center justify-center " > {courseData?.coursePlan  && <CourseCard  courseData={courseData?.coursePlan} />} </div> 
-  
+
+      {/*  all courses section */ }
+      <section className='flex flex-wrap gap-6 justify-center items-center '  >
+           {
+             allCourses && allCourses?.map((courseData,courseIndex) => ( 
+                  <div key={courseIndex} className="  items-center justify-center " > {courseData  && <CourseCard  courseData={courseData} />} </div> 
+              )) 
+            }  
+      </section>    
+          
     </>
   )
 }

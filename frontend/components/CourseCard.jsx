@@ -7,7 +7,7 @@ function CourseCard({courseData}) {
 
   return (
     <Link to= {`/course/${courseData?._id}`}>
-    <div className=" w-32 md:w-44  lg:w-52 bg-white  shadow-md rounded-2xl p-5 mt-6 transition-transform transform hover:scale-105 hover:shadow-xl">
+    <div className=" w-44 md:w-52 lg:w-64 bg-white  shadow-md rounded-2xl p-5 mt-6 transition-transform transform hover:scale-105 hover:shadow-xl">
       {/* Course Title */}
       <h1 className="text-lg font-bold text-gray-800 truncate">
         {courseData.courseName}

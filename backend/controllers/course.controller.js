@@ -141,8 +141,14 @@ async function getCourseById(req,res){
   return res.json({"coursePlan":currentCourse});
 }
 
+async function getAllCourses(req,res){
+  const allCourses= await Course.find(); //<--fetches all courses from the database and returns an array
+  return res.json({"allCourses":allCourses});
+}
+
 module.exports={
   generateCoursePlan,
   getChapterContent,
-  getCourseById
+  getCourseById,
+  getAllCourses
 }
