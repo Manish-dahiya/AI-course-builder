@@ -1,24 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import getEmbedUrl from "../src/utility/helper.js"
-function ChapterVideoPlayer({ selectedChapter }) {
-    const [isLoading, setIsLoading] = useState(false);
+function ChapterVideoPlayer({isVideoLoading, selectedChapter }) {
 
     useEffect(() => {
-        setIsLoading(!isLoading);
         console.log(selectedChapter?.videoUrl);
     }, [selectedChapter])
 
 
     return (
         <div className="w-full h-full mt-3">
-            {!isLoading && selectedChapter?.videoUrl!="" ? (
+            {!isVideoLoading && selectedChapter?.videoUrl!="" ? (
                 <div
                     id="video-div"
                     className="bg-gray-900 h-64 sm:h-80 md:h-96 w-full rounded-lg shadow-lg"
                 >
                     <iframe
                         width="100%"
-                        height="400"
+                        height="100%"
                         src={getEmbedUrl(selectedChapter?.videoUrl)}
                         title="Chapter Video"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

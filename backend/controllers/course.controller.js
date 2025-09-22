@@ -173,6 +173,7 @@ async function getChapterVideo(req, res) {
     course.modules[moduleIndex].chapters[chapIndex].videoUrl = video.url;
     await course.save();
 
+    console.log("youtube video search successful ")
     res.json({
       course,
       chapter: course.modules[moduleIndex].chapters[chapIndex]

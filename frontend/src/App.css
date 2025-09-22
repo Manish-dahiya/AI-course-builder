@@ -1,7 +1,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
 }
 
@@ -85,4 +85,78 @@
 .text-small{
   font-size: x-small;
 }
+@media (min-width: 640px) { /* sm */
+  .text-small {
+    font-size: 14px;
+  }
+}
 
+@media (min-width: 768px) { /* md */
+  .text-small {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) { /* lg */
+  .text-small {
+    font-size: 18px;
+  }
+}
+
+
+/* markdown css */
+  /* Mobile screens */
+  @media (max-width: 768px) {
+    .markdown-h2 { font-size: 1rem !important; }
+    .markdown-strong { font-size: 0.9rem !important; }
+    .markdown-p,
+    .markdown-li { font-size: 0.8rem !important; }
+    .markdown-pre,
+    .markdown-code { font-size: 0.75rem !important; }
+  }
+
+  /* Default (desktop) */
+  .markdown-h2 {
+    color: #1e40af;
+    font-size: 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #d1d5db;
+    padding-bottom: 4px;
+    margin-top: 16px;
+    margin-bottom: 6px;
+  }
+  .markdown-strong {
+    color: #4f46e5;
+    font-size: 1.25rem;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  .markdown-p,
+  .markdown-li {
+    text-align: left;
+    font-size: 1rem;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .markdown-pre,
+  .markdown-code {
+    font-size: 0.9rem;
+    font-family: monospace;
+    word-break: break-word;
+  }
+  .markdown-pre {
+    background-color: #1f2937;
+    color: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+  .markdown-code {
+    background-color: #374151;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
