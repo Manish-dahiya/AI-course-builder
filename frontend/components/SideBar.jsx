@@ -13,8 +13,9 @@ function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course
     // useEffect(()=>{ firstChapterRef.current?.click()},[])
 
     return (
-        <>
-        <div className="w-52  md:w-72  bg-[#2f3a4f] h-screen p-4 overflow-y-auto shadow-lg text-gray-50">
+        < >
+        
+        <div className="w-52 z-10  md:w-72  bg-[#2f3a4f] h-screen p-4 overflow-y-auto shadow-lg text-gray-50">
             {/* Course Name */}
             <h2 className=" font-bold mb-4">{course.courseName}</h2>
 
@@ -23,7 +24,7 @@ function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course
                 <div key={index} className="mb-2">
                     {/* Module Header */}
                     <div
-                        className={`cursor-pointer bg-[#2f3a4f] px-2 sm:py-1 rounded  hover:bg-[#5f697b] flex justify-between items-center  ${openModuleIndex === index ? 'bg-[#5f697b] py-1' : 'bg-[#2f3a4f]'} `}
+                        className={`cursor-pointer bg-[#2f3a4f] px-2 sm:py-1 rounded  hover:bg-[#5f697b] flex justify-between items-center gap-4 ${openModuleIndex === index ? 'bg-[#5f697b] py-1' : 'bg-[#2f3a4f]'} `}
                         onClick={() => toggleModule(index)}
                     >
                         <span className="text-small  truncate">{module.title}</span>
@@ -55,7 +56,7 @@ function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course
 
             <span onClick={() => setShowSidebar(!showSidebar)} className=' sm:hidden cursor-pointer' >close</span>
         </div>
-        
+
             </>
     )
 }

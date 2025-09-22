@@ -117,6 +117,18 @@ function CoursePage() {
 
     return (
         <div className="flex h-screen ">
+            {showSidebar &&<div id='overlay-div-for-sidebar'   onClick={() => setShowSidebar(false)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'transparent',
+                        zIndex: 1,
+                    }} >
+
+            </div>}
             <div
                 className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
@@ -209,7 +221,7 @@ function CoursePage() {
 
                         {contentLines?.length > 20 && (
                             <button
-                                className="text-blue-500 mt-2 hover:underline"
+                                className="text-blue-500 mt-2 mb-10 hover:underline"
                                 onClick={() => setExpanded(!expanded)}
                             >
                                 {expanded ? 'Read Less' : 'Read More...'}
