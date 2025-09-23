@@ -8,7 +8,7 @@ import {API_BASE_URL} from "../src/utility/helper"
 
 function Home() {
      const [prompt, setPrompt] = useState("");
-      const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
+      // const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
       const [isLoading,setIsLoading]= useState(false)
       const [allCourses,setAllCourses]= useState(null);
     
@@ -28,13 +28,12 @@ function Home() {
     
             } );
     
-            if (!res.ok) throw new Error("Failed to generate course");
+            if (res.status==400) throw new Error("Failed to generate course");
     
             const data= await res.json();
-            setCourseData(data)
-    
-            console.log("aa gya data bhai frontend pe bhi",data);
-    
+            // setCourseData(data)
+            //prepend this in allCourses
+            setAllCourses(prev => [data.coursePlan, ...prev]);    
         }
         catch(error){
            console.error("frontend error :",error );
@@ -60,7 +59,7 @@ function Home() {
       }
     
     
-      useEffect(()=>{ console.log("useeffect") },[courseData])
+      // useEffect(()=>{ console.log("useeffect") },[courseData])
   return (
     <>
          <div className=" bg-blue-100  items-center justify-center p-4">
@@ -91,8 +90,8 @@ function Home() {
       {/*  all courses section */ }
       <section className='flex flex-wrap gap-5 sm:gap-6 justify-center items-center '  >
            {
-             allCourses && allCourses?.map((courseData,courseIndex) => ( 
-                  <div key={courseIndex} className="  items-center justify-center " > {courseData  && <CourseCard  courseData={courseData} />} </div> 
+             allCourses && allCourses?.map((courseD,courseIndex) => ( 
+                  <div key={courseIndex} className="  items-center justify-center " > {courseD  && <CourseCard  courseData={courseD} />} </div> 
               )) 
             }  
       </section>    

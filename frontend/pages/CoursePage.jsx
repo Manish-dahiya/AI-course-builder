@@ -9,6 +9,8 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { downloadPDF } from '../src/utility/helper.js'
 import { API_BASE_URL } from '../src/utility/helper.js';
+import GenerateAudio from '../components/GenerateAudio.jsx';
+import AudioLoader from '../components/AudioLoader.jsx';
 
 function CoursePage() {
     const { id } = useParams();
@@ -19,7 +21,7 @@ function CoursePage() {
 
     const [showSidebar, setShowSidebar] = useState(true);
     const [expanded, setExpanded] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);//for the loading of the chapter content 
+    const [isLoading, setIsLoading] = useState(true);//for the loading of the chapter content 
     const [isVideoLoading,setIsVideoLoading]= useState(false);
 
     const [isVideo, setIsVideo] = useState(false);
@@ -45,9 +47,8 @@ function CoursePage() {
                 const data = await res.json();
                 setCourse(data.coursePlan);
                 setSelectedChapter(data.coursePlan.modules[0].chapters[0]);
-
-                setSelectedChapter(data.coursePlan.modules[0].chapters[0]);
-
+                //fetch course' first modules's first chapter as soon as you come on the coursePage.
+                await fetchChapterContent(data.coursePlan.modules[0].chapters[0],0,0,data.coursePlan);
             }
         } catch (error) {
             console.log("Error fetching course:", error);
@@ -55,7 +56,7 @@ function CoursePage() {
     };
 
     //this will be called in sidebar 
-    const fetchChapterContent = async (chapter, openModuleIndex, chapIndex) => {
+    const fetchChapterContent = async (chapter, openModuleIndex, chapIndex,courseData = course) => {
         setSelectedChapter(chapter);
         setIsLoading(true)
         if (chapter.aiContent.length == 0) {
@@ -65,7 +66,7 @@ function CoursePage() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ "courseId": course._id, "moduleId": course.modules[openModuleIndex]._id, "chapterId": chapter._id })
+                body: JSON.stringify({ "courseId": courseData._id, "moduleId": courseData.modules[openModuleIndex]._id, "chapterId": chapter._id })
             })
 
             const data = await res.json();
@@ -139,9 +140,9 @@ function CoursePage() {
 
 
             {/* main content */}
-            <div className='text-gray-300  sm:ml-42 md:ml-72  ' >
+            <div className='text-gray-300  sm:ml-42 md:ml-72 w-full  ' >
 
-                {isLoading ? <ChapterSkeletonLoader /> :
+                {isLoading ? <ChapterSkeletonLoader /> : 
                     <div >
                         {/* <h1 className='font-bold  sm:text-4xl mb-3 '>{selectedChapter?.title || "No chapter selected"}</h1> */}
 
@@ -149,8 +150,8 @@ function CoursePage() {
                         <section id="youtube-video-section" className="w-full">
                             
 
-                            <div className='flex justify-start items-center my-2 gap-3 sm:gap-5 sm:font-semibold'>
-                                <span onClick={() => setShowSidebar(!showSidebar)} className={`text-white font-bold text-2xl mt-1 sm:mt-0 cursor-pointer`} > &#9776; </span>
+                            <div className='flex flex-wrap justify-center sm:justify-start items-center my-2 gap-3 sm:gap-5 sm:font-semibold'>
+                                <span onClick={() => setShowSidebar(!showSidebar)} className={`text-white font-bold text-2xl mt-1 sm:mt-0 cursor-pointer sm:hidden`} > &#9776; </span>
                                 <button
                                     className="flex items-center px-1 py-1 sm:px-4 sm:py-2  text-small sm:text-sm bg-[#ff0033] hover:bg-blue-900 text-white font-semibold rounded-md transition-colors duration-300"
                                     onClick={handleVideoButtonClick}
@@ -163,6 +164,7 @@ function CoursePage() {
                                 >
                                     Download PDF
                                 </button>
+                                <GenerateAudio selectedChapter={selectedChapter} courseId={course._id} moduleId={course.modules[openModuleIndex]._id} setSelectedChapter={setSelectedChapter} setCourse={setCourse} />
                             </div>
 
 
@@ -174,6 +176,7 @@ function CoursePage() {
                             >
                                 <ChapterVideoPlayer isVideoLoading={isVideoLoading} selectedChapter={selectedChapter} />
                             </div>
+                            
                         </section>
 
 
@@ -182,7 +185,7 @@ function CoursePage() {
                             ref={pdfRef}
                             style={{
                                 width: "100%",           // responsive width
-                                maxWidth: "800px",       // keeps it from being too wide on large screens
+                                maxWidth: "1000px",       // keeps it from being too wide on large screens
                                 padding: "40px 20px",    // top/bottom + left/right padding
                                 margin: "0 auto",        // center the container
                                 backgroundColor: "#a6aebe",

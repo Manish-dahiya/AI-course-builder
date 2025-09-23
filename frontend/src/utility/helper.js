@@ -7,37 +7,6 @@ export default function getEmbedUrl(url) {
   return `https://www.youtube.com/embed/${videoId}`;
 }
 
-// export  async function downloadPDF(pdfRef,chapterTitle){
-//   const input = pdfRef.current;
-
-//   const canvas = await html2canvas(input, {
-//     scale: 2, // sharper text
-//     useCORS: true,
-//   });
-
-//   const imgData = canvas.toDataURL("image/png");
-//   const pdf = new jsPDF("p", "mm", "a4");
-
-//   const imgWidth = 210; // A4 width
-//   const pageHeight = 297; // A4 height
-//   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-//   let heightLeft = imgHeight;
-//   let position = 0;
-
-//   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-//   heightLeft -= pageHeight;
-
-//   while (heightLeft > 0) {
-//     position = heightLeft - imgHeight;
-//     pdf.addPage();
-//     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-//     heightLeft -= pageHeight;
-//   }
-
-//   console.log("pdf created successfully");
-//   pdf.save(`${chapterTitle || "lesson"}.pdf`);
-// };
-
 export async function downloadPDF(pdfRef, chapterTitle) {
   const input = pdfRef.current;
 

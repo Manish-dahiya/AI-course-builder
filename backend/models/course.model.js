@@ -17,6 +17,14 @@ const chapterSchema = new mongoose.Schema({
   videoUrl:{
     type:String,
     default:""
+  },
+  audioUrl:{
+    type:String,
+    default:""
+  },
+  audioLanguage:{
+    type:String,
+    default:""
   }
 });
 
@@ -36,6 +44,7 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
   modules: [moduleSchema], // array of modules
+  userPrompt: { type: String, required: true },
   createdAt: {
     type: Date,
     default: Date.now,

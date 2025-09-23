@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom';
 
 function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course, fetchChapterContent, setShowSidebar, showSidebar }) {
     const toggleModule = (index) => {
@@ -54,6 +55,7 @@ function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course
                 </div>
             ))}
 
+            <Link to={'/'} className='  cursor-pointer me-2 hover:text-blue ' >Home</Link>
             <span onClick={() => setShowSidebar(!showSidebar)} className=' sm:hidden cursor-pointer' >close</span>
         </div>
 
