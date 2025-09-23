@@ -8,7 +8,7 @@ router.post("/generate-course",generateCoursePlan);
 router.post("/chapter",getChapterContent);
 router.post("/chapter/get-chapter-video", getChapterVideo );//<----
 router.post("/chapter/get-chapter-audio",generateChapterAudio)
-router.get("/all-courses", getAllCourses );
+// router.get("/all-courses", getAllCourses );
 router.get("/:id",getCourseById );
 
 module.exports=router;

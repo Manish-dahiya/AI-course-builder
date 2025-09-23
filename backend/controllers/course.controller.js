@@ -2,6 +2,7 @@ const express = require("express");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Course= require("../models/course.model");
 const ytSearch= require('yt-search');
+const User = require("../models/user.model");
 
  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -26,7 +27,7 @@ Topic: ${topic}
 
  async function generateCoursePlan (req, res){
   try {
-    const  {prompt}  = req.body;
+    const  {prompt,userId}  = req.body;
 
     if (!prompt.toLowerCase().includes("course")) {
       return res.json({
@@ -54,13 +55,16 @@ Topic: ${topic}
     }
 
     courseData.userPrompt=prompt;
+    courseData.userId= userId
     const db_response=await Course.create(courseData);
     console.log(db_response);
 
+    const currUser= await User.findOne({_id:userId});
+    currUser.courses.push(db_response._id);
+    await currUser.save();
+
     //response
     res.status(201).json({ coursePlan: db_response });
-
-
 
   } catch (error) {
     console.error(error);
@@ -144,10 +148,11 @@ async function getCourseById(req,res){
   return res.json({"coursePlan":currentCourse});
 }
 
-async function getAllCourses(req,res){
-  const allCourses= await Course.find(); //<--fetches all courses from the database and returns an array
-  return res.json({"allCourses":allCourses});
-}
+// async function getAllCourses(req,res){
+//   const allCourses= await Course.find(); //<--fetches all courses from the database and returns an array
+//   return res.json({"allCourses":allCourses});
+// }
+
 async function getChapterVideo(req, res) {
   const { courseId, moduleIndex, chapterId } = req.body;
   if (!courseId || moduleIndex === undefined || !chapterId) {
@@ -194,7 +199,7 @@ module.exports={
   generateCoursePlan,
   getChapterContent,
   getCourseById,
-  getAllCourses,
+  // getAllCourses,
   getChapterVideo,
  
 }

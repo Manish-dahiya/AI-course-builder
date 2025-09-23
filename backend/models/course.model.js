@@ -10,21 +10,21 @@ const chapterSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  aiContent:{
-    type:String,
-    default:"",
+  aiContent: {
+    type: String,
+    default: "",
   },
-  videoUrl:{
-    type:String,
-    default:""
+  videoUrl: {
+    type: String,
+    default: ""
   },
-  audioUrl:{
-    type:String,
-    default:""
+  audioUrl: {
+    type: String,
+    default: ""
   },
-  audioLanguage:{
-    type:String,
-    default:""
+  audioLanguage: {
+    type: String,
+    default: ""
   }
 });
 
@@ -45,6 +45,10 @@ const courseSchema = new mongoose.Schema({
   },
   modules: [moduleSchema], // array of modules
   userPrompt: { type: String, required: true },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course"
+  },
   createdAt: {
     type: Date,
     default: Date.now,

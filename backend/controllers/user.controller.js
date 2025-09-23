@@ -6,7 +6,7 @@ async function loginUser(req,res){
     const { sub} = req.auth; // decoded JWT
     const {name,email}= req.body //sent in body of fetch req from frontend
     console.log(sub,name,email);
-    let user = await User.findOne({ auth0Id: sub });
+    let user = await User.findOne({ auth0Id: sub }).populate("courses");
 
     if (!user) {
       // New user → create
