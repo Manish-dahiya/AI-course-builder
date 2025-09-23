@@ -1,10 +1,10 @@
 const express = require("express");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const Course= require("../models/course.model");
-const ytSearch= require('yt-search');
+const Course = require("../models/course.model");
+const ytSearch = require('yt-search');
 const User = require("../models/user.model");
 
- const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helper: build structured prompt for Gemini
 const buildPrompt = (topic) => `
@@ -25,9 +25,9 @@ Always output a JSON structure with:
 Topic: ${topic}
 `;
 
- async function generateCoursePlan (req, res){
+async function generateCoursePlan(req, res) {
   try {
-    const  {prompt,userId}  = req.body;
+    const { prompt, userId } = req.body;
 
     if (!prompt.toLowerCase().includes("course")) {
       return res.json({
@@ -45,23 +45,26 @@ Topic: ${topic}
     const raw = text;
     const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
     const courseData = JSON.parse(cleaned);
-    
+
 
     //save the data to mongo db
-    for(let i=0;i<courseData.modules.length;i++){
-        for(let j=0;j<courseData.modules[i].chapters.length;j++){
-            courseData.modules[i].chapters[j].aiContent="";
-        }
+    for (let i = 0; i < courseData.modules.length; i++) {
+      for (let j = 0; j < courseData.modules[i].chapters.length; j++) {
+        courseData.modules[i].chapters[j].aiContent = "";
+      }
     }
 
-    courseData.userPrompt=prompt;
-    courseData.userId= userId
-    const db_response=await Course.create(courseData);
+    courseData.userPrompt = prompt;
+    if (userId != "guestId") courseData.userId = userId
+    const db_response = await Course.create(courseData);
     console.log(db_response);
 
-    const currUser= await User.findOne({_id:userId});
-    currUser.courses.push(db_response._id);
-    await currUser.save();
+    if (userId != "guestId") {
+      const currUser = await User.findOne({ _id: userId });
+      currUser.courses.push(db_response._id);
+      await currUser.save();
+    }
+
 
     //response
     res.status(201).json({ coursePlan: db_response });
@@ -72,9 +75,9 @@ Topic: ${topic}
   }
 }
 
-async function chapterCall(courseTitle,moduleTitle,chapterTitle,userPrompt=""){
-  try{
-       const prompt = `
+async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = "") {
+  try {
+    const prompt = `
         You are an expert educator. 
         Write a **detailed, easy-to-understand explanation** for the chapter titled "${chapterTitle}" 
         from the module "${moduleTitle}" of the course "${courseTitle}".
@@ -87,19 +90,19 @@ async function chapterCall(courseTitle,moduleTitle,chapterTitle,userPrompt=""){
         including examples if necessary, step-by-step explanations, and practical insights for the user.
         `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
 
-        return text;
+    return text;
   }
-  catch(error){
+  catch (error) {
 
   }
 }
 
-async function getChapterContent(req,res){
+async function getChapterContent(req, res) {
 
   const course = await Course.findById(req.body.courseId);
   if (!course) return res.status(404).json({ error: "Course not found" });
@@ -112,14 +115,14 @@ async function getChapterContent(req,res){
 
   const chapter = course.modules[moduleIndex].chapters[chapterIndex];
 
-  if(chapter.aiContent.length>0){
-           return res.json({ 
-            course
-        });
+  if (chapter.aiContent.length > 0) {
+    return res.json({
+      course
+    });
   }
 
   // Otherwise, call AI to generate content
-  const aiContent = await chapterCall(course.title,course.modules[moduleIndex].title,course.modules[moduleIndex].chapters[chapterIndex].title, course?.userPrompt  )
+  const aiContent = await chapterCall(course.title, course.modules[moduleIndex].title, course.modules[moduleIndex].chapters[chapterIndex].title, course?.userPrompt)
   chapter.aiContent = aiContent;
 
   // Update the aiContent field in db
@@ -127,25 +130,25 @@ async function getChapterContent(req,res){
   await course.save();
 
 
-// 
+  // 
   // Return the chapter info including index
-    res.json({ 
-       course
-    });  
+  res.json({
+    course
+  });
 }
 
-async function getCourseById(req,res){
-  const {id}= req.params;
+async function getCourseById(req, res) {
+  const { id } = req.params;
 
-  const currentCourse= await Course.findById(id);
+  const currentCourse = await Course.findById(id);
 
-  if(!currentCourse){
-    return res.json({"coursePlan":"no course found with current id"});
+  if (!currentCourse) {
+    return res.json({ "coursePlan": "no course found with current id" });
 
   }
 
-  console.log("find call returned data:",currentCourse);
-  return res.json({"coursePlan":currentCourse});
+  console.log("find call returned data:", currentCourse);
+  return res.json({ "coursePlan": currentCourse });
 }
 
 // async function getAllCourses(req,res){
@@ -192,14 +195,40 @@ async function getChapterVideo(req, res) {
   }
 }
 
+async function deleteCourse(req, res) {
+  const { id } = req.params
+  try{
+  const courseToDelete = await Course.findById(id);
+
+  // 🗑️ Delete the course
+  await Course.findByIdAndDelete(id);
+
+  if (courseToDelete.userId) {
+    await User.findByIdAndUpdate(
+      courseToDelete.userId,
+      { $pull: { courses: courseToDelete._id } }, // remove from array
+      { new: true }
+    );
+  }
+
+  console.log("course deleted successfully");
+   return res.status(200).json({ message: "Course deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+
+
+}
 
 
 
-module.exports={
+
+module.exports = {
   generateCoursePlan,
   getChapterContent,
   getCourseById,
   // getAllCourses,
   getChapterVideo,
- 
+  deleteCourse
 }

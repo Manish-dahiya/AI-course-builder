@@ -10,7 +10,7 @@ export default function LoginPage() {
   // Guest login
   const handleGuestLogin = () => {
     // You can store guest info in local state or localStorage
-    localStorage.setItem("guestUser", JSON.stringify({ name: "Guest" }));
+    localStorage.setItem("guestUser", JSON.stringify({ name: "Guest" ,_id:"guestId"}));
     navigate("/"); // redirect to your protected route
   };
 

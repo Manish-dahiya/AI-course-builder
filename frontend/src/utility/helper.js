@@ -109,3 +109,4 @@ export async function downloadPDF(pdfRef, chapterTitle) {
 
 
 export const API_BASE_URL = "http://localhost:5000";
+// export const guestId="68d2903f7624a212d31d4984"

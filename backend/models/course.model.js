@@ -47,7 +47,8 @@ const courseSchema = new mongoose.Schema({
   userPrompt: { type: String, required: true },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Course"
+    ref: "User",
+    default:null
   },
   createdAt: {
     type: Date,

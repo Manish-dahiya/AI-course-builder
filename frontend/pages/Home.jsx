@@ -8,6 +8,9 @@ import { API_BASE_URL } from "../src/utility/helper"
 
 import { useAuth0 } from "@auth0/auth0-react";
 import { UserContext } from "../src/contexts/UserContextProvider";  // 👈 import context
+import UserProfilePopup from '../components/UserProfilePopup';
+import userIcon from "../src/assets/userIcon.png"
+
 
 function Home() {
   const { currentUser } = useContext(UserContext);
@@ -17,6 +20,7 @@ function Home() {
   // const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
   const [isLoading, setIsLoading] = useState(false)
   const [allCourses, setAllCourses] = useState([]);
+  const [profilePopup, setProfilePopup] = useState(false);
 
   //api for building the course
   const handleBuildCourse = async () => {
@@ -30,8 +34,7 @@ function Home() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ "prompt": prompt, "userType": localStorage.getItem("guestUser") ? "guest" : "real"
- , "userId": currentUser?._id })
+        body: JSON.stringify({ "prompt": prompt, "userId": currentUser?._id })
 
       });
 
@@ -70,7 +73,20 @@ function Home() {
 
   return (
     <>
+      <UserProfilePopup profilePopup={profilePopup} setProfilePopup={setProfilePopup} />
+
+
       <div className=" bg-blue-100  items-center justify-center p-4">
+
+        {/* user profile icon */}
+        <div className='border  border-red-500 sm:h-16 flex justify-between items-center'>
+          <div>hello username to </div>
+          <button className='h-10 w-10 rounded-full border border-gray-600' onClick={() => setProfilePopup(!profilePopup)} >
+            <img src={userIcon} alt="" />
+          </button>
+        </div>
+
+
         <h1 className="text-xl font-bold  sm:mb-4 text-center">AI Course Builder</h1>
         <br />
 
@@ -99,12 +115,12 @@ function Home() {
       <section className='flex flex-wrap gap-5 sm:gap-6 justify-center items-center '  >
         {
           allCourses && allCourses?.map((courseD, courseIndex) => (
-            <div key={courseIndex} className="  items-center justify-center " > {courseD && <CourseCard courseData={courseD} />} </div>
+            <div key={courseIndex} className="  items-center justify-center " > {courseD && <CourseCard courseData={courseD} allCourses={allCourses} setAllCourses={setAllCourses} />} </div>
           ))
         }
       </section>
 
-    </>
+    </ >
   )
 }
 
