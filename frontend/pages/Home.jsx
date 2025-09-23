@@ -30,7 +30,8 @@ function Home() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ "prompt": prompt, "userId": currentUser?._id })
+        body: JSON.stringify({ "prompt": prompt, "userType": localStorage.getItem("guestUser") ? "guest" : "real"
+ , "userId": currentUser?._id })
 
       });
 
