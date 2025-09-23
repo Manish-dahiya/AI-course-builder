@@ -69,6 +69,7 @@ function GenerateAudio({ courseId, selectedChapter, moduleId, setSelectedChapter
                         <option value="english">English </option>
                         <option value="hindi">Hindi</option>
                         <option value="hinglish">Hinglish </option>
+                        <option value="tamil">tamil </option>
                     </select>
 
                     <button className=' text-small sm:p-2 px-1 bg-[#a6aebe] text-black hover:scale-95 transform transition duration-200 ease-in-out rounded ' onClick={handleGenerateAudio} >Generate Audio for Chapter</button>

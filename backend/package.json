@@ -16,7 +16,9 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-jwt": "^8.5.1",
     "gtts": "^0.2.1",
+    "jwks-rsa": "^3.2.0",
     "mongoose": "^8.18.1",
     "yt-search": "^2.13.1"
   },

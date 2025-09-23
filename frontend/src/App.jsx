@@ -7,6 +7,7 @@ import CourseCard from '../components/CourseCard';
 import { BrowserRouter,Routes , Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import CoursePage from '../pages/CoursePage';
+import LoginPage from '../pages/LoginPage';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home></Home>}  > </Route>
+          <Route path="/login" element={<LoginPage/>}  ></Route>
           <Route path="course/:id" element={<CoursePage/>} ></Route>          
 
         </Routes>

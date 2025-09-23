@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import reactLogo from '../src/assets/react.svg'
 import viteLogo from '/vite.svg'
 import '../src/App.css'
@@ -6,7 +6,13 @@ import { useEffect } from 'react';
 import CourseCard from '../components/CourseCard';
 import {API_BASE_URL} from "../src/utility/helper"
 
+import { useAuth0 } from "@auth0/auth0-react";
+import { UserContext } from "../src/contexts/UserContextProvider";  // 👈 import context
+
 function Home() {
+      const { currentUser } = useContext(UserContext);
+      console.log(currentUser);
+
      const [prompt, setPrompt] = useState("");
       // const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });
       const [isLoading,setIsLoading]= useState(false)

@@ -209,6 +209,9 @@
 
 
 // ---------------------------------------------with gtts package-----------------------------------------------
+//gemini 1.5-flash-->50 req per day
+//gemini 2.5-flash-->200 requests per day
+//gemini 2.5-flash lite-->1000 req per day
 const Course = require("../models/course.model");
 const { v2: cloudinary } = require("cloudinary");
 const fs = require("fs").promises;

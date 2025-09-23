@@ -13,12 +13,13 @@ dotenv.config();
 const port=process.env.PORT
 
 const db=require("./dbConfig/dbConfig.js");
-
 app.use(express.json())
 
 
 const courseRoutes = require("./routes/course.routes.js");
+const userRoutes= require("./routes/user.routes.js");
 app.use("/api/courses", courseRoutes);
+app.use("/api/users", userRoutes);
 
 app.listen(port,"0.0.0.0",()=>{ //<----------------
     console.log("server started at ",port);
