@@ -43,16 +43,16 @@ function GenerateAudio({ courseId, selectedChapter, moduleId, setSelectedChapter
         }
     }
 
-    const downloadAudio=(url)=>{
-         //download the audio for the user as soon as server provides the url
-                const a= document.createElement('a');
-                a.href= url;
-                a.download = `${`chapter-${url}`}.mp3`;
-                 a.target = "_blank"; // <-- open in new tab
-                document.body.appendChild(a);
-                a.click();
+    const downloadAudio = (url) => {
+        //download the audio for the user as soon as server provides the url
+        const a = document.createElement('a');
+        a.href = `${url}?dl=1`;
+        a.download = `${`chapter-${url}`}.mp3`;
+        a.target = "_blank"; // <-- open in new tab
+        document.body.appendChild(a);
+        a.click();
 
-                document.body.removeChild(a);
+        document.body.removeChild(a);
     }
 
 
@@ -74,6 +74,7 @@ function GenerateAudio({ courseId, selectedChapter, moduleId, setSelectedChapter
                     <button className=' text-small sm:p-2 px-1 bg-[#a6aebe] text-black hover:scale-95 transform transition duration-200 ease-in-out rounded ' onClick={handleGenerateAudio} >Generate Audio for Chapter</button>
                 </>
                 : <AudioLoader />
+
             }
 
         </div>
