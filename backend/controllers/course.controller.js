@@ -47,7 +47,7 @@ async function generateCoursePlan(req, res) {
     }
 
     // ✅ Call Gemini only if it's a course request
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); //you can have a loop for different models if one rate-limits exceeds ,gemin-1.5 flash is one such.
 
     const result = await model.generateContent(buildPrompt(prompt));
     const text = result.response.text();
@@ -90,7 +90,7 @@ async function generateCoursePlan(req, res) {
 }
 
 async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = "") {
-  try {
+  
     const prompt = `
         You are an expert educator. 
         Write a **detailed, easy-to-understand explanation** for the chapter titled "${chapterTitle}" 
@@ -106,42 +106,54 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
 
 
     console.log("generating chapter content.....")
+    const models=["llama-3.1-8b-instant"  ,"llama-3.3-70b-versatile", "openai/gpt-oss-120b" ]
 
-    //api call
-    console.log("groq api key",process.env.GROQ_API_KEY)
-     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "messages": [
-          {
-            "role": "user",
-            "content": prompt
-          }
-        ],
-        "model": "llama-3.1-8b-instant", // Available free model
-        "max_tokens": 1500
-      })
-    });
-
-    const data = await response.json();
     
-    if (!response.ok) {
-      console.error("Groq Error:", data);
-      return "";
+  for (let model of models) {
+    try {
+      console.log(`Trying model: ${model}`);
+
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "messages": [
+            { "role": "user", "content": prompt }
+          ],
+          "model": model,
+          "max_tokens": 1500
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(`Error with model ${model}:`, data);
+
+        // ✅ Switch model only if rate-limit error
+        if (data?.error?.code === "rate_limit_exceeded") {
+          console.warn(`Rate limit hit on ${model}, switching to next model...`);
+          continue;
+        }
+
+        // ❌ Other errors → stop
+        return "";
+      }
+
+      console.log(`Chapter generated with ${model}:`, data.choices[0].message.content);
+      return data.choices[0].message.content;
+
+    } catch (err) {
+      console.error(`Error with model ${model}:`, err);
     }
-
-    console.log("chapter content generated:", data.choices[0].message.content);
-    return data.choices[0].message.content;
-
-
-  } catch (error) {
-    console.log("hugging_face error", error);
-    return "";
   }
+
+  return ""; // nothing worked
+
+   
 }
 
 async function getChapterContent(req, res) {
