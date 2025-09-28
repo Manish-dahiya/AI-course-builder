@@ -9,7 +9,7 @@ router.post("/chapter",getChapterContent);
 router.post("/chapter/get-chapter-video", getChapterVideo );//<----
 router.post("/chapter/get-chapter-audio",generateChapterAudio)
 router.get("/delete-course/:id",deleteCourse);
-// router.get("/all-courses", getAllCourses );
+// router.get("/all-courses/:userId", getAllCourses );
 router.get("/:id",getCourseById );
 
 module.exports=router;

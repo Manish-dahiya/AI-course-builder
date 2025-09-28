@@ -198,7 +198,8 @@ async function getCourseById(req, res) {
 }
 
 // async function getAllCourses(req,res){
-//   const allCourses= await Course.find(); //<--fetches all courses from the database and returns an array
+//   const {userId}= req.params
+//   const allCourses= await User.findById(userId); //<--fetches all courses from the database and returns an array
 //   return res.json({"allCourses":allCourses});
 // }
 

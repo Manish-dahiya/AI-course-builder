@@ -13,7 +13,7 @@ import userIcon from "../src/assets/userIcon.png"
 
 
 function Home() {
-  const { currentUser } = useContext(UserContext);
+  const { currentUser ,setCurrentUser} = useContext(UserContext);
   console.log(currentUser);
 
   const [prompt, setPrompt] = useState("");
@@ -46,6 +46,20 @@ function Home() {
       // setCourseData(data)
       //prepend this in allCourses
       setAllCourses(prev => [data.coursePlan, ...(Array.isArray(prev) ? prev : [])]);
+      if(currentUser?._id=="guestId"){
+         const guestUser = JSON.parse(localStorage.getItem("guestUser")) || {
+        userName: "Guest",
+        _id: "guestId",
+        courses: []
+      };
+
+      guestUser.courses.push(data.coursePlan); // add new course
+      localStorage.setItem("guestUser", JSON.stringify(guestUser));
+
+      // Update currentUser state as well to reflect changes in UI
+      setCurrentUser(guestUser);
+      }
+
     }
     catch (error) {
       console.error("frontend error :", error);
@@ -58,10 +72,7 @@ function Home() {
 
   //api for fetching all courses
   const fetchAllCourses = async () => {
-    // const res= await fetch(`${API_BASE_URL}/api/courses/all-courses`);
-    // const data= await res.json();
-
-    // setAllCourses(data.allCourses);
+   
     setAllCourses(currentUser.courses);
   }
 
