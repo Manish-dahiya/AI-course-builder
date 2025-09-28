@@ -8,14 +8,16 @@ import { useContext } from "react";
 export default function LoginPage() {
   const { loginWithRedirect } = useAuth0();
   const navigate = useNavigate();
-  const {setCurrentUser}= useContext(UserContext)
+  const { setCurrentUser } = useContext(UserContext)
 
   // Guest login
   const handleGuestLogin = () => {
-    // You can store guest info in local state or localStorage
-    localStorage.setItem("guestUser", JSON.stringify({ userName: "Guest" ,_id:"guestId",courses:[]}));
-    navigate("/"); // redirect to your protected route
-    setCurrentUser(localStorage.getItem("guestUser"));
+    const guestObj = { userName: "Guest", _id: "guestId", courses: [] };
+
+    localStorage.setItem("guestUser", JSON.stringify(guestObj));
+    setCurrentUser(guestObj); // ✅ store as object, not raw string
+
+    navigate("/");
 
   };
 
@@ -23,7 +25,7 @@ export default function LoginPage() {
     <div className="min-h-screen w-full  flex flex-col sm:flex-row gap-10 items-center justify-center bg-gray-100">
 
       <div className="flex flex-col items-center  w-1/2 order-2 sm:order-1 sm:px-3 gap-4">
-      <h1 className=" sm:text-3xl font-bold mb-8">AI Course Builder Login</h1>
+        <h1 className=" sm:text-3xl font-bold mb-8">AI Course Builder Login</h1>
         <button
           onClick={() => loginWithRedirect()}
           className="text-small px-1 sm:px-6 py-1 sm:py-2 w-1/2 bg-blue-600 text-white rounded hover:bg-blue-700"

@@ -6,12 +6,12 @@ import { useAuth0 } from '@auth0/auth0-react';
 function UserProfilePopup({ profilePopup, setProfilePopup }) {
     const navigate = useNavigate();
     const { currentUser } = useContext(UserContext);
-    const { getAccessTokenSilently,isAuthenticated } = useAuth0();
+    const { getAccessTokenSilently, isAuthenticated, logout } = useAuth0();
 
     const handleProfileDelete = async () => {
 
         if (currentUser.userName != "Guest" && isAuthenticated) {
-            console.log("delete req has sent",currentUser)
+            console.log("delete req has sent", currentUser)
             const token = await getAccessTokenSilently();
             const res = await fetch(
                 `http://localhost:5000/api/users/delete-profile/${currentUser._id}`,
@@ -37,6 +37,22 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
         navigate("/login");
     }
 
+    const handleLogout = () => {
+        if (currentUser?._id === "guestId") {
+            console.log("Guest logout triggered");
+            localStorage.removeItem("guestUser"); // ✅ match the actual key
+            navigate("/login");
+        } else {
+            console.log("Auth0 logout triggered");
+            logout({
+                logoutParams: {
+                    returnTo: window.location.origin + "/login",
+                },
+            });
+        }
+    };
+
+
     return (
         <div
             id="profile-div"
@@ -52,9 +68,10 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
                     X
                 </button>
             </div>
-            <p className="text-small text-gray-600">{currentUser?.userEmail?currentUser.userEmail:"guest@gmail.com"}</p>
+            <p className="text-small text-gray-600">{currentUser?.userEmail ? currentUser.userEmail : "guest@gmail.com"}</p>
 
-            <button className='text-small border-b border-red-600 text-red-600     hover:text-red-800' onClick={handleProfileDelete} >delete</button>
+            <button className='text-small border-b me-10 border-red-600 text-red-600     hover:text-red-800' onClick={handleProfileDelete} >delete</button>
+            <button className='text-small border-b border-blue-600 text-blue-600     hover:text-blue-800' onClick={handleLogout} >logout</button>
         </div>
     )
 }

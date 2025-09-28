@@ -262,7 +262,7 @@ async function deleteCourse(req, res) {
     // 🗑️ Delete the course
     await Course.findByIdAndDelete(id);
 
-    if (courseToDelete.userId) {
+    if (courseToDelete?.userId) {
       await User.findByIdAndUpdate(
         courseToDelete.userId,
         { $pull: { courses: courseToDelete._id } }, // remove from array

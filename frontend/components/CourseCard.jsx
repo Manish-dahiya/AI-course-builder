@@ -7,7 +7,7 @@ function CourseCard({ courseData, allCourses, setAllCourses }) {
   const handleDelete = async () => {
     // 🗑️ remove deleted course from UI
     setAllCourses((prevCourses) =>
-      prevCourses.filter((course) => course._id !== courseData._id)
+      prevCourses.filter((course) => course && course._id && course._id !== courseData._id)
     );
 
     const res = await fetch(`http://localhost:5000/api/courses/delete-course/${courseData._id}`)
@@ -16,8 +16,6 @@ function CourseCard({ courseData, allCourses, setAllCourses }) {
       console.log("response is ok", data.message);
     }
     else console.log("some error in response while deleting");
-
-    
   }
 
   return (
