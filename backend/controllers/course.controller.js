@@ -1,4 +1,6 @@
 const express = require("express");
+const mongoose = require("mongoose");
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Course = require("../models/course.model");
 const ytSearch = require('yt-search');
@@ -16,7 +18,7 @@ Always output a JSON structure with:
     {
       "title": "string",
       "chapters": [
-        {"title": "string", "summary": "string" "}
+        {"title": "string", "summary": "string",aiContent:"" }
       ]
     }
   ]
@@ -27,7 +29,16 @@ Topic: ${topic}
 
 async function generateCoursePlan(req, res) {
   try {
-    const { prompt, userId } = req.body;
+    let { prompt, userId } = req.body;
+
+    // If guest, assign default guest user ID
+    const GUEST_USER_ID = "68d79e6dbd0ea980a92e5b6f";
+    if (!userId || userId === "guestId") {
+      userId = GUEST_USER_ID;
+    }
+    userId = new mongoose.Types.ObjectId(userId);
+
+
 
     if (!prompt.toLowerCase().includes("course")) {
       return res.json({
@@ -47,23 +58,26 @@ async function generateCoursePlan(req, res) {
     const courseData = JSON.parse(cleaned);
 
 
-    //save the data to mongo db
-    for (let i = 0; i < courseData.modules.length; i++) {
-      for (let j = 0; j < courseData.modules[i].chapters.length; j++) {
-        courseData.modules[i].chapters[j].aiContent = "";
-      }
-    }
+    // save the data to mongo db
+    // for (let i = 0; i < courseData.modules.length; i++) {
+    //   for (let j = 0; j < courseData.modules[i].chapters.length; j++) {
+
+    //     courseData.modules[i].chapters[j].aiContent = "";
+    //   }
+    // }
+
 
     courseData.userPrompt = prompt;
-    if (userId != "guestId") courseData.userId = userId
+    courseData.userId = userId
     const db_response = await Course.create(courseData);
-    console.log(db_response);
 
-    if (userId != "guestId") {
-      const currUser = await User.findOne({ _id: userId });
-      currUser.courses.push(db_response._id);
-      await currUser.save();
-    }
+    console.log("new course created:", db_response);
+
+
+    const currUser = await User.findOne({ _id: userId });
+    currUser.courses.push(db_response._id);
+    await currUser.save();
+
 
 
     //response
@@ -90,15 +104,43 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
         including examples if necessary, step-by-step explanations, and practical insights for the user.
         `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    console.log("generating chapter content.....")
 
-    return text;
-  }
-  catch (error) {
+    //api call
+    console.log("groq api key",process.env.GROQ_API_KEY)
+     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "messages": [
+          {
+            "role": "user",
+            "content": prompt
+          }
+        ],
+        "model": "llama-3.1-8b-instant", // Available free model
+        "max_tokens": 1500
+      })
+    });
 
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("Groq Error:", data);
+      return "";
+    }
+
+    console.log("chapter content generated:", data.choices[0].message.content);
+    return data.choices[0].message.content;
+
+
+  } catch (error) {
+    console.log("hugging_face error", error);
+    return "";
   }
 }
 
@@ -115,23 +157,27 @@ async function getChapterContent(req, res) {
 
   const chapter = course.modules[moduleIndex].chapters[chapterIndex];
 
+
   if (chapter.aiContent.length > 0) {
+    console.log("2:", chapter);
     return res.json({
       course
     });
   }
 
   // Otherwise, call AI to generate content
-  const aiContent = await chapterCall(course.title, course.modules[moduleIndex].title, course.modules[moduleIndex].chapters[chapterIndex].title, course?.userPrompt)
-  chapter.aiContent = aiContent;
+  const ai_Content = await chapterCall(course.title, course.modules[moduleIndex].title, course.modules[moduleIndex].chapters[chapterIndex].title, course?.userPrompt)
+  chapter.aiContent = ai_Content;
+
 
   // Update the aiContent field in db
-  course.modules[moduleIndex].chapters[chapterIndex].aiContent = aiContent;
+  course.modules[moduleIndex].chapters[chapterIndex].aiContent = ai_Content;
   await course.save();
 
+  console.log("chapter content generated:", course.modules[moduleIndex].chapters[chapterIndex].aiContent);
 
-  // 
-  // Return the chapter info including index
+
+
   res.json({
     course
   });
@@ -197,22 +243,22 @@ async function getChapterVideo(req, res) {
 
 async function deleteCourse(req, res) {
   const { id } = req.params
-  try{
-  const courseToDelete = await Course.findById(id);
+  try {
+    const courseToDelete = await Course.findById(id);
 
-  // 🗑️ Delete the course
-  await Course.findByIdAndDelete(id);
+    // 🗑️ Delete the course
+    await Course.findByIdAndDelete(id);
 
-  if (courseToDelete.userId) {
-    await User.findByIdAndUpdate(
-      courseToDelete.userId,
-      { $pull: { courses: courseToDelete._id } }, // remove from array
-      { new: true }
-    );
-  }
+    if (courseToDelete.userId) {
+      await User.findByIdAndUpdate(
+        courseToDelete.userId,
+        { $pull: { courses: courseToDelete._id } }, // remove from array
+        { new: true }
+      );
+    }
 
-  console.log("course deleted successfully");
-   return res.status(200).json({ message: "Course deleted successfully" });
+    console.log("course deleted successfully");
+    return res.status(200).json({ message: "Course deleted successfully" });
   } catch (error) {
     console.error("Error deleting course:", error);
     return res.status(500).json({ error: "Server error" });

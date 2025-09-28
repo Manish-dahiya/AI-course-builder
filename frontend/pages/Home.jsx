@@ -41,10 +41,11 @@ function Home() {
       if (res.status == 400) throw new Error("Failed to generate course");
 
       const data = await res.json();
-      console.log(data.coursePlan);
+      console.log("data.coursePlan:", data.coursePlan);
+
       // setCourseData(data)
       //prepend this in allCourses
-      setAllCourses(prev => [data.coursePlan, ...prev]);
+      setAllCourses(prev => [data.coursePlan, ...(Array.isArray(prev) ? prev : [])]);
     }
     catch (error) {
       console.error("frontend error :", error);
@@ -64,12 +65,18 @@ function Home() {
     setAllCourses(currentUser.courses);
   }
 
-  useEffect(() => { fetchAllCourses() }, [currentUser]) //everytime on load of this page
+  useEffect(() => {
+    if(currentUser) fetchAllCourses() 
+    }, [currentUser]) //everytime on load of this page
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPrompt(value);
   }
+
+
+  if (!currentUser) return <div>Loading user...</div>;
+
 
   return (
     <>
@@ -79,15 +86,16 @@ function Home() {
       <div className=" bg-blue-100  items-center justify-center p-4">
 
         {/* user profile icon */}
-        <div className='border  border-red-500 sm:h-16 flex justify-between items-center'>
-          <div>hello username to </div>
+        <div className=' sm:h-16 flex justify-between items-center'>
+          <div> </div>
+          <h1 className="text-xl font-bold  sm:mb-4 text-center">AI Course Builder</h1>
+
           <button className='h-10 w-10 rounded-full border border-gray-600' onClick={() => setProfilePopup(!profilePopup)} >
             <img src={userIcon} alt="" />
           </button>
+
+
         </div>
-
-
-        <h1 className="text-xl font-bold  sm:mb-4 text-center">AI Course Builder</h1>
         <br />
 
         {!isLoading ? <input

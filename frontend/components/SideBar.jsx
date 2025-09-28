@@ -7,6 +7,8 @@ function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course
     };
 
     const onSelectChapter = async (chapter, chapIndex) => {
+        console.log("chapter itself",chapter);
+        console.log("chapter content",chapter.aiContent);
         await fetchChapterContent(chapter,openModuleIndex,chapIndex);
         setShowSidebar(false);
     }

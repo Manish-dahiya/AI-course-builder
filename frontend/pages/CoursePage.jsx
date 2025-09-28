@@ -58,6 +58,10 @@ function CoursePage() {
     //this will be called in sidebar 
     const fetchChapterContent = async (chapter, openModuleIndex, chapIndex,courseData = course) => {
         setSelectedChapter(chapter);
+        console.log("yha pr tha",chapter)
+
+        if(!chapter.aiContent) console.log("bhai nhi h yr!!")
+
         setIsLoading(true)
         if (chapter.aiContent.length == 0) {
             //over here you have to make an api call to generate the content of this chapter

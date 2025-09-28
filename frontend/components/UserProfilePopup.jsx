@@ -6,10 +6,12 @@ import { useAuth0 } from '@auth0/auth0-react';
 function UserProfilePopup({ profilePopup, setProfilePopup }) {
     const navigate = useNavigate();
     const { currentUser } = useContext(UserContext);
-    const { getAccessTokenSilently } = useAuth0();
+    const { getAccessTokenSilently,isAuthenticated } = useAuth0();
 
     const handleProfileDelete = async () => {
-        if (currentUser._id != "guestId") {
+
+        if (currentUser.userName != "Guest" && isAuthenticated) {
+            console.log("delete req has sent",currentUser)
             const token = await getAccessTokenSilently();
             const res = await fetch(
                 `http://localhost:5000/api/users/delete-profile/${currentUser._id}`,
@@ -31,7 +33,8 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
         }
 
         // clear local storage or context for guest user as well
-        localStorage.removeItem("currentUser");
+        localStorage.removeItem("guestUser");
+        navigate("/login");
     }
 
     return (
@@ -41,7 +44,7 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
             ${profilePopup ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"}`}
         >
             <div className="flex justify-between items-center">
-                <h3 className="text-small font-semibold">{currentUser?.userName}</h3>
+                <h3 className="text-small font-semibold">{currentUser.userName}</h3>
                 <button
                     className="font-bold text-small"
                     onClick={() => setProfilePopup(!profilePopup)}
@@ -49,7 +52,7 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
                     X
                 </button>
             </div>
-            <p className="text-small text-gray-600">{currentUser?.userEmail}</p>
+            <p className="text-small text-gray-600">{currentUser?.userEmail?currentUser.userEmail:"guest@gmail.com"}</p>
 
             <button className='text-small border-b border-red-600 text-red-600     hover:text-red-800' onClick={handleProfileDelete} >delete</button>
         </div>

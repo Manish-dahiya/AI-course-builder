@@ -2,16 +2,21 @@ import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import loginImg from "../src/assets/login.jpg"
+import { UserContext } from "../src/contexts/UserContextProvider";
+import { useContext } from "react";
 
 export default function LoginPage() {
   const { loginWithRedirect } = useAuth0();
   const navigate = useNavigate();
+  const {setCurrentUser}= useContext(UserContext)
 
   // Guest login
   const handleGuestLogin = () => {
     // You can store guest info in local state or localStorage
-    localStorage.setItem("guestUser", JSON.stringify({ name: "Guest" ,_id:"guestId"}));
+    localStorage.setItem("guestUser", JSON.stringify({ userName: "Guest" ,_id:"guestId",courses:[]}));
     navigate("/"); // redirect to your protected route
+    setCurrentUser(localStorage.getItem("guestUser"));
+
   };
 
   return (
