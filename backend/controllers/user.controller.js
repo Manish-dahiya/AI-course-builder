@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/user.model");
 const Course = require("../models/course.model");
+const Review = require("../models/review.model");
 
 async function loginUser(req, res) {
     try {
@@ -54,7 +55,31 @@ async function deleteUser(req, res) {
   }
 }
 
+async function WriteUserReview(req,res){
+    const {review}= req.body;
+    try {
+        const response= await Review.create(review);
+        console.log("review saved:",response);
+
+        return res.json({"message":"review posted successfully"});
+    } catch (error) {
+        console.log(error);
+        return res.json({"message":error?.errorResponse?.errmsg})
+    }
+}
+
+async function fetchAllReviews(req,res){
+    try {
+        const response= await Review.find().sort({ createdAt: -1 }).limit(6); //top 6 newest reviews
+        return res.json({"all_reviews":response});
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     loginUser,
-    deleteUser
+    deleteUser,
+    WriteUserReview,
+    fetchAllReviews
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth0 } from "@auth0/auth0-react";
+import { API_BASE_URL } from '../utility/helper';
 
 export const UserContext = createContext();
 
@@ -9,6 +10,13 @@ function UserContextProvider({ children }) {
         const guest = localStorage.getItem("guestUser");
         return guest ? JSON.parse(guest) : null;
     });
+
+    //user reviews section
+    const [review, setReview] = useState("");
+    const [rating, setRating] = useState(0);
+    const [allReviews, setAllReviews] = useState([]);
+
+
     useEffect(() => {
         const fetchOrCreateUser = async () => {
             const guest = localStorage.getItem("guestUser");
@@ -44,8 +52,54 @@ function UserContextProvider({ children }) {
         fetchOrCreateUser();
     }, [isAuthenticated, user, getAccessTokenSilently]);
 
+
+    async function postReview(text) {
+        const newReview = {
+            userName: currentUser?.userName,
+            userEmail: currentUser?.userEmail,
+            text,
+            rating
+        };
+
+
+        const res = await fetch(`${API_BASE_URL}/api/users/user-review`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ "review": { "userName": currentUser?.userName, "userEmail": currentUser?.userEmail, "text": text, "rating": rating } })
+        })
+
+        if (res.ok) {
+            setAllReviews([newReview, ...allReviews]); // update instantly
+            const data = await res.json();
+            console.log(data.message);
+            // fetchAllReviews(); // sync with DB
+
+        }
+        else console.log("error in posting review")
+    }
+
+    async function fetchAllReviews() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/users/all-reviews`);
+            if (res.ok) {
+                const data = await res.json();
+                console.log(data.all_reviews);
+                setAllReviews(data.all_reviews);
+            }
+            else console.log("error in fetching all reviews")
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        fetchAllReviews();
+    }, [])
+
     return (
-        <UserContext.Provider value={{ currentUser, setCurrentUser }}>
+        <UserContext.Provider value={{ currentUser, setCurrentUser, review, setReview, rating, setRating, allReviews, setAllReviews, postReview }}>
             {children}
         </UserContext.Provider>
     );

@@ -10,7 +10,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { UserContext } from "../src/contexts/UserContextProvider";  // 👈 import context
 import UserProfilePopup from '../components/UserProfilePopup';
 import userIcon from "../src/assets/userIcon.png"
-
+import no_data_gif from "../src/assets/no-data.gif"
+import UsersReviews from '../components/UsersReviews';
 
 function Home() {
   const { currentUser ,setCurrentUser} = useContext(UserContext);
@@ -90,7 +91,7 @@ function Home() {
 
 
   return (
-    <>
+    <div className='bg-blue-100 rounded-4xl p-3'>
       <UserProfilePopup profilePopup={profilePopup} setProfilePopup={setProfilePopup} />
 
 
@@ -133,13 +134,23 @@ function Home() {
       {/*  all courses section */}
       <section className='flex flex-wrap gap-5 sm:gap-6 justify-center items-center '  >
         {
-          allCourses && allCourses?.map((courseD, courseIndex) => (
+          allCourses?.length>0 ? allCourses?.map((courseD, courseIndex) => (
             <div key={courseIndex} className="  items-center justify-center " > {courseD && <CourseCard courseData={courseD} allCourses={allCourses} setAllCourses={setAllCourses} />} </div>
           ))
+          :<div className='text-red  mt-10  '>
+              <p className='text-small '>Your courses will appear here...</p>
+              <img src={no_data_gif} alt="" className='h-52 w-52  sm:h-96 sm:w-96' />  
+          </div>
         }
       </section>
 
-    </ >
+      <section id='review-section' className='sm:mt-52 mt-20'>
+          <UsersReviews/>
+      </section>
+      
+
+
+    </div >
   )
 }
 
