@@ -15,7 +15,7 @@ import UsersReviews from '../components/UsersReviews';
 
 function Home() {
   const { currentUser ,setCurrentUser} = useContext(UserContext);
-  console.log(currentUser);
+  
 
   const [prompt, setPrompt] = useState("");
   // const [courseData,setCourseData]= useState({"coursePlan":{"courseName":"youtune mastery course: this is amazing"} });

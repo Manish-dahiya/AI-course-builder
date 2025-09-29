@@ -11,6 +11,7 @@ import { downloadPDF } from '../src/utility/helper.js'
 import { API_BASE_URL } from '../src/utility/helper.js';
 import GenerateAudio from '../components/GenerateAudio.jsx';
 import AudioLoader from '../components/AudioLoader.jsx';
+import ChapterMcqs from '../components/ChapterMcqs.jsx';
 
 function CoursePage() {
     const { id } = useParams();
@@ -25,6 +26,7 @@ function CoursePage() {
     const [isVideoLoading, setIsVideoLoading] = useState(false);
 
     const [isVideo, setIsVideo] = useState(false);
+    const [isQuestions, setIsQuestions] = useState(false);
 
     const pdfRef = useRef();
 
@@ -58,9 +60,6 @@ function CoursePage() {
     //this will be called in sidebar 
     const fetchChapterContent = async (chapter, openModuleIndex, chapIndex, courseData = course) => {
         setSelectedChapter(chapter);
-        console.log("yha pr tha", chapter)
-
-        if (!chapter.aiContent) console.log("bhai nhi h yr!!")
 
         setIsLoading(true)
         if (chapter.aiContent.length == 0) {
@@ -112,21 +111,33 @@ function CoursePage() {
 
     const handleMarkAsRead = async () => {
         setSelectedChapter(prev => ({
-                    ...prev,
-                    isRead: !prev?.isRead
+            ...prev,
+            isRead: !prev?.isRead
         }));
         try {
             const res = await fetch(`${API_BASE_URL}/api/courses/chapter/mark-as-read/${selectedChapter?._id}`);
             if (!res.ok) {
                 //if the res is not ok ,then revert the changes made above.
-               setSelectedChapter(prev => ({
+                setSelectedChapter(prev => ({
                     ...prev,
                     isRead: !prev?.isRead
-               }));
+                }));
             }
         } catch (error) {
             console.log(error)
         }
+    }
+
+    const fetchChapterQuestions=async()=>{
+        if ( selectedChapter?.questions?.length == 0) {
+
+            const res = await fetch(`${API_BASE_URL}/api/courses/chapter/questions/${selectedChapter?._id}`)
+            const data = await res.json();
+            console.log("yes questions fetched!!", data);
+            setCourse(data.course);
+            setSelectedChapter(data.chapter);
+        }
+        setIsQuestions((prev=>!prev));
     }
 
 
@@ -141,18 +152,18 @@ function CoursePage() {
     return (
         <div className="flex h-screen ">
 
-            {/* {showSidebar &&<div id='overlay-div-for-sidebar'   onClick={() => setShowSidebar(false)}
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'transparent',
-                        zIndex: 1,
-                    }} >
+            {showSidebar && <div id='overlay-div-for-sidebar' onClick={() => setShowSidebar(false)}
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'transparent',
+                    zIndex: 1,
+                }} >
 
-            </div>} */}
+            </div>}
             <div
                 className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
@@ -201,8 +212,6 @@ function CoursePage() {
                             </div>
 
                         </section>
-
-
 
                         <div
                             ref={pdfRef}
@@ -255,10 +264,23 @@ function CoursePage() {
                             <button className='mb-3 border border-white p-2 rounded  mt-1 sm:w-1/4' onClick={handleMarkAsRead} >{selectedChapter?.isRead ? "completed" : "Mark as read"} </button>
                         </footer>
 
+                        <button onClick={fetchChapterQuestions} className="px-1 py-1 sm:px-4 sm:py-2 text-small sm:text-sm bg-blue-600 text-white rounded shadow hover:bg-blue-700">Questions</button>
+                        {
+                            <div
+                                className={`overflow-hidden transition-all duration-500 ease-in-out
+                                ${isQuestions ? "max-h-[1000px] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-5"}
+                                `}
+                            >
+                                <ChapterMcqs />
+                            </div>
+
+                        }
+
 
                     </div>
                 }
             </div>
+
 
         </div>
     );

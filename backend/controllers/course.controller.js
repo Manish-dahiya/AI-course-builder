@@ -46,7 +46,8 @@ async function generateCoursePlan(req, res) {
       });
     }
 
-    // ✅ Call Gemini only if it's a course request
+    console.log("generating");
+    // Call Gemini only if it's a course request
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); //you can have a loop for different models if one rate-limits exceeds ,gemin-1.5 flash is one such.
 
     const result = await model.generateContent(buildPrompt(prompt));
@@ -90,25 +91,25 @@ async function generateCoursePlan(req, res) {
 }
 
 async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = "") {
-  
-    const prompt = `
-        You are an expert educator. 
-        Write a **detailed, easy-to-understand explanation** for the chapter titled "${chapterTitle}" 
-        from the module "${moduleTitle}" of the course "${courseTitle}".
-        The course was originally requested as: "${userPrompt}".
 
-        Make sure to follow the language/style/tone based on the user request.
-      If they asked for Hinglish, write in Hinglish. If Hindi, use Hindi. If English, use English.
+  const prompt = `
+      You are an expert educator. 
+      Write a **detailed, easy-to-understand explanation** for the chapter titled "${chapterTitle}" 
+      from the module "${moduleTitle}" of the course "${courseTitle}".
+      The course was originally requested as: "${userPrompt}".
 
-        Make sure the content is **long enough to cover a full page** and explains the topic thoroughly, 
-        including examples if necessary, step-by-step explanations, and practical insights for the user.
-        `;
+      Make sure to follow the language/style/tone based on the user request.
+    If they asked for Hinglish, write in Hinglish. If Hindi, use Hindi. If English, use English.
+
+      Make sure the content is **long enough to cover a full page** and explains the topic thoroughly, 
+      including examples if necessary, step-by-step explanations, and practical insights for the user.
+      `;
 
 
-    console.log("generating chapter content.....")
-    const models=["llama-3.1-8b-instant"  ,"llama-3.3-70b-versatile", "openai/gpt-oss-120b" ]
+  console.log("generating chapter content.....")
+  const models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
 
-    
+
   for (let model of models) {
     try {
       console.log(`Trying model: ${model}`);
@@ -143,7 +144,7 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
         return "";
       }
 
-      return data.choices[0].message.content;
+      return data.choices[0].message.content; 
 
     } catch (err) {
       console.error(`Error with model ${model}:`, err);
@@ -152,7 +153,7 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
 
   return ""; // nothing worked
 
-   
+
 }
 
 async function getChapterContent(req, res) {
@@ -181,13 +182,10 @@ async function getChapterContent(req, res) {
   chapter.aiContent = ai_Content;
 
 
+
   // Update the aiContent field in db
   course.modules[moduleIndex].chapters[chapterIndex].aiContent = ai_Content;
   await course.save();
-
-  console.log("chapter content generated:", course.modules[moduleIndex].chapters[chapterIndex].aiContent);
-
-
 
   res.json({
     course
@@ -279,29 +277,144 @@ async function deleteCourse(req, res) {
 
 }
 
-async function markChapterRead(req,res){
-  const {chapterId}= req.params
-    try {
+async function markChapterRead(req, res) {
+  const { chapterId } = req.params
+  try {
     const course = await Course.findOne({ "modules.chapters._id": chapterId });
 
-     let chapterFound = null;
+    let chapterFound = null;
 
     // Loop modules and chapters
     course.modules.forEach(module => {
       const chapter = module.chapters.id(chapterId); // mongoose shortcut
       if (chapter) {  // nothing but array filter logic
-        chapter.isRead = chapter.isRead?false:true;
+        chapter.isRead = chapter.isRead ? false : true;
         chapterFound = chapter;
       }
     });
 
     await course.save();
 
-    return res.json({"message":"chapter marked successfully"});
+    return res.json({ "message": "chapter marked successfully" });
 
-    } catch (error) {
-      console.log("error in marking chapter read",error)
+  } catch (error) {
+    console.log("error in marking chapter read", error)
+  }
+}
+
+
+async function getChapterQuestions(req,res){
+  const {chapterId}= req.params;
+
+  console.log("fetching chapter questions....")
+
+  const course = await Course.findOne({ "modules.chapters._id": chapterId });
+
+  if(!course){
+    return res.json({"message":"there is no course","id":chapterId});
+  }
+
+    let chapterFound = null;
+
+    // Loop modules and chapters
+    course.modules.forEach(module => {
+      const chapter = module.chapters.id(chapterId); // mongoose shortcut
+      if (chapter) {  // nothing but array filter logic
+        chapterFound = chapter;
+      }
+    });
+  const chapterContent= chapterFound.aiContent
+  const prompt = `
+You are an expert educator.
+
+Read the following chapter content and generate 5 multiple-choice questions from it.
+
+Chapter Content:
+"""
+${chapterContent}
+"""
+
+Output a valid JSON object in this format:
+
+{
+  "mcq": [
+    {
+      "question": "string",
+      "options": ["string", "string", "string", "string"],
+      "answerIndex": number // 0-based index of the correct option
     }
+  ]
+}
+
+Rules:
+- Only return valid JSON, nothing else.
+- Preserve the meaning of the chapter content.
+- Ensure the correct answerIndex corresponds to the right option.
+- Options must be non-trivial and plausible.
+- Keep Markdown formatting (like **bold**, _italic_) inside the strings if it helps readability.
+`;
+
+//---------------------------------------------------------------
+  const models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
+
+
+  for (let model of models) {
+    try {
+      console.log(`Trying model: ${model}`);
+
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "messages": [
+            { "role": "user", "content": prompt }
+          ],
+          "model": model,
+          "max_tokens": 1500
+        })
+      });
+
+      const data = await response.json();
+     
+      if (!response.ok) {
+        console.error(`Error with model ${model}:`, data);
+
+        //  Switch model only if rate-limit error
+        if (data?.error?.code === "rate_limit_exceeded") {
+          console.warn(`Rate limit hit on ${model}, switching to next model...`);
+          continue;
+        }
+
+        //  Other errors → stop
+        return "";
+      }
+
+      const raw= data.choices[0].message.content;
+      const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+      const mcqData = JSON.parse(cleaned);
+
+      console.log("data is:",mcqData);
+
+      //save the questions to db as well-------------------------------------------
+      course.modules.forEach(module => {
+      const chapter = module.chapters.id(chapterId); // mongoose shortcut
+      if (chapter) {  // nothing but array filter logic
+        chapter.questions = mcqData.mcq
+        chapterFound = chapter; // update ref to updated one
+      }
+      });
+
+      await course.save();
+      //-----------------------------------------------------
+      return res.json({course,"chapter":chapterFound}); 
+
+    } catch (err) {
+      console.error(`Error with model ${model}:`, err);
+    }
+  }
 }
 
 
@@ -312,5 +425,6 @@ module.exports = {
   // getAllCourses,
   getChapterVideo,
   deleteCourse,
-  markChapterRead
+  markChapterRead,
+  getChapterQuestions
 }

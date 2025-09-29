@@ -1,19 +1,30 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../src/utility/helper';
+import { UserContext } from '../src/contexts/UserContextProvider';
 
 
 function CourseCard({ courseData, allCourses, setAllCourses }) {
+  const { currentUser } = useContext(UserContext)
+
 
   const handleDelete = async () => {
-    // 🗑️ remove deleted course from UI
-    setAllCourses((prevCourses) =>
-      prevCourses.filter((course) => course && course._id && course._id !== courseData._id)
+    //  remove deleted course from UI
+    const updatedCourses = allCourses.filter(
+      (course) => course && course._id && course._id !== courseData._id
     );
+    setAllCourses(updatedCourses);
 
-    const res = await fetch(`http://localhost:5000/api/courses/delete-course/${courseData._id}`)
+    const res = await fetch(`${API_BASE_URL}/api/courses/delete-course/${courseData._id}`)
     if (res.ok) {
       const data = res.json();
       console.log("response is ok", data.message);
+      if (currentUser?._id == "guestId") {
+        
+        const guestObj = { userName: "Guest", _id: "guestId", courses: updatedCourses };
+        localStorage.setItem("guestUser", JSON.stringify(guestObj));
+      }
+
     }
     else console.log("some error in response while deleting");
   }

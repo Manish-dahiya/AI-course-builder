@@ -15,7 +15,7 @@ export default function LoginPage() {
     const guestObj = { userName: "Guest", _id: "guestId", courses: [] };
 
     localStorage.setItem("guestUser", JSON.stringify(guestObj));
-    setCurrentUser(guestObj); // ✅ store as object, not raw string
+    setCurrentUser(guestObj); //  store as object, not raw string
 
     navigate("/");
 

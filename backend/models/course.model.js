@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 
+const mcqSchema = new mongoose.Schema({
+  question: { type: String, required: true },
+  options: [{ type: String, required: true }], // array of strings
+  answerIndex: { type: Number, required: true },
+});
+
 // Chapter Schema
 const chapterSchema = new mongoose.Schema({
   title: {
@@ -26,6 +32,7 @@ const chapterSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  questions:[mcqSchema],
   isRead:{
     type:Boolean,
     default:false

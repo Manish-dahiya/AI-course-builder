@@ -1,0 +1,24 @@
+# Node modules (we install inside container)
+node_modules
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment variables (keep secrets outside image)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Build output (if building in container or using dev server)
+dist
+build
+
+# Version control
+.git
+
+# Optional: Vite cache
+.vite

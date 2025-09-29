@@ -1,0 +1,17 @@
+# Ignore node_modules (we install inside container)
+node_modules
+
+# Ignore local logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore environment files if you want to keep secrets outside image
+.env
+
+# Ignore build artifacts (frontend)
+dist
+build
+
+# Ignore version control
+.git
