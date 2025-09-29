@@ -25,6 +25,10 @@ const chapterSchema = new mongoose.Schema({
   audioLanguage: {
     type: String,
     default: ""
+  },
+  isRead:{
+    type:Boolean,
+    default:false
   }
 });
 

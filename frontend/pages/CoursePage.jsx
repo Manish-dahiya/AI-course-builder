@@ -22,7 +22,7 @@ function CoursePage() {
     const [showSidebar, setShowSidebar] = useState(true);
     const [expanded, setExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);//for the loading of the chapter content 
-    const [isVideoLoading,setIsVideoLoading]= useState(false);
+    const [isVideoLoading, setIsVideoLoading] = useState(false);
 
     const [isVideo, setIsVideo] = useState(false);
 
@@ -48,7 +48,7 @@ function CoursePage() {
                 setCourse(data.coursePlan);
                 setSelectedChapter(data.coursePlan.modules[0].chapters[0]);
                 //fetch course' first modules's first chapter as soon as you come on the coursePage.
-                await fetchChapterContent(data.coursePlan.modules[0].chapters[0],0,0,data.coursePlan);
+                await fetchChapterContent(data.coursePlan.modules[0].chapters[0], 0, 0, data.coursePlan);
             }
         } catch (error) {
             console.log("Error fetching course:", error);
@@ -56,11 +56,11 @@ function CoursePage() {
     };
 
     //this will be called in sidebar 
-    const fetchChapterContent = async (chapter, openModuleIndex, chapIndex,courseData = course) => {
+    const fetchChapterContent = async (chapter, openModuleIndex, chapIndex, courseData = course) => {
         setSelectedChapter(chapter);
-        console.log("yha pr tha",chapter)
+        console.log("yha pr tha", chapter)
 
-        if(!chapter.aiContent) console.log("bhai nhi h yr!!")
+        if (!chapter.aiContent) console.log("bhai nhi h yr!!")
 
         setIsLoading(true)
         if (chapter.aiContent.length == 0) {
@@ -101,15 +101,33 @@ function CoursePage() {
     }
 
     const handleVideoButtonClick = () => {
-    // Immediately toggle the video div
-    setIsVideo(!isVideo);
+        // Immediately toggle the video div
+        setIsVideo(!isVideo);
 
-    // Only fetch if videoUrl is empty
-    if (selectedChapter?.videoUrl === "") {
-        fetchChapterVideo(); // async call will update the chapter and stop loading when done
-    }
+        // Only fetch if videoUrl is empty
+        if (selectedChapter?.videoUrl === "") {
+            fetchChapterVideo(); // async call will update the chapter and stop loading when done
+        }
     };
 
+    const handleMarkAsRead = async () => {
+        setSelectedChapter(prev => ({
+                    ...prev,
+                    isRead: !prev?.isRead
+        }));
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/courses/chapter/mark-as-read/${selectedChapter?._id}`);
+            if (!res.ok) {
+                //if the res is not ok ,then revert the changes made above.
+               setSelectedChapter(prev => ({
+                    ...prev,
+                    isRead: !prev?.isRead
+               }));
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
 
     useEffect(() => {
@@ -122,7 +140,8 @@ function CoursePage() {
 
     return (
         <div className="flex h-screen ">
-            {showSidebar &&<div id='overlay-div-for-sidebar'   onClick={() => setShowSidebar(false)}
+
+            {/* {showSidebar &&<div id='overlay-div-for-sidebar'   onClick={() => setShowSidebar(false)}
                     style={{
                         position: 'fixed',
                         top: 0,
@@ -133,26 +152,26 @@ function CoursePage() {
                         zIndex: 1,
                     }} >
 
-            </div>}
+            </div>} */}
             <div
                 className={`fixed top-0 left-0 z-20 h-full transition-transform duration-300 ease-in-out
             ${showSidebar ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
             >
                 <SideBar selectedChapter={selectedChapter} openModuleIndex={openModuleIndex} setOpenModuleIndex={setOpenModuleIndex} course={course} fetchChapterContent={fetchChapterContent} setShowSidebar={setShowSidebar} showSidebar={showSidebar} />
-                
+
             </div>
 
 
             {/* main content */}
-            <div className='text-gray-300  sm:ml-42 md:ml-72 w-full  ' >
+            <div className='text-gray-300   sm:ml-42 md:ml-72 w-full  ' >
 
-                {isLoading ? <ChapterSkeletonLoader /> : 
+                {isLoading ? <ChapterSkeletonLoader /> :
                     <div >
                         {/* <h1 className='font-bold  sm:text-4xl mb-3 '>{selectedChapter?.title || "No chapter selected"}</h1> */}
 
                         {/* youtube video functionality */}
                         <section id="youtube-video-section" className="w-full">
-                            
+
 
                             <div className='flex flex-wrap justify-center sm:justify-start items-center my-2 gap-3 sm:gap-5 sm:font-semibold'>
                                 <span onClick={() => setShowSidebar(!showSidebar)} className={`text-white font-bold text-2xl mt-1 sm:mt-0 cursor-pointer sm:hidden`} > &#9776; </span>
@@ -180,7 +199,7 @@ function CoursePage() {
                             >
                                 <ChapterVideoPlayer isVideoLoading={isVideoLoading} selectedChapter={selectedChapter} />
                             </div>
-                            
+
                         </section>
 
 
@@ -200,7 +219,7 @@ function CoursePage() {
                                 boxSizing: "border-box", // include padding in width
                             }}
                         >
-                            
+
                             <ReactMarkdown
                                 components={{
                                     h2: ({ node, ...props }) => <h2 className="markdown-h2" {...props} />,
@@ -224,19 +243,20 @@ function CoursePage() {
                             </ReactMarkdown>
                         </div>
 
+                        <footer className='flex  gap-2 justify-between items-center'>
+                            {contentLines?.length > 20 && (
+                                <button
+                                    className="text-blue-500 mt-2  hover:underline"
+                                    onClick={() => setExpanded(!expanded)}
+                                >
+                                    {expanded ? 'Read Less' : 'Read More...'}
+                                </button>
+                            )}
+                            <button className='mb-3 border border-white p-2 rounded  mt-1 sm:w-1/4' onClick={handleMarkAsRead} >{selectedChapter?.isRead ? "completed" : "Mark as read"} </button>
+                        </footer>
 
-
-                        {contentLines?.length > 20 && (
-                            <button
-                                className="text-blue-500 mt-2 mb-10 hover:underline"
-                                onClick={() => setExpanded(!expanded)}
-                            >
-                                {expanded ? 'Read Less' : 'Read More...'}
-                            </button>
-                        )}
 
                     </div>
-
                 }
             </div>
 

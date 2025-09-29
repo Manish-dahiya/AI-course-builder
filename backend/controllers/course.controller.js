@@ -143,7 +143,6 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
         return "";
       }
 
-      console.log(`Chapter generated with ${model}:`, data.choices[0].message.content);
       return data.choices[0].message.content;
 
     } catch (err) {
@@ -280,7 +279,30 @@ async function deleteCourse(req, res) {
 
 }
 
+async function markChapterRead(req,res){
+  const {chapterId}= req.params
+    try {
+    const course = await Course.findOne({ "modules.chapters._id": chapterId });
 
+     let chapterFound = null;
+
+    // Loop modules and chapters
+    course.modules.forEach(module => {
+      const chapter = module.chapters.id(chapterId); // mongoose shortcut
+      if (chapter) {  // nothing but array filter logic
+        chapter.isRead = chapter.isRead?false:true;
+        chapterFound = chapter;
+      }
+    });
+
+    await course.save();
+
+    return res.json({"message":"chapter marked successfully"});
+
+    } catch (error) {
+      console.log("error in marking chapter read",error)
+    }
+}
 
 
 module.exports = {
@@ -289,5 +311,6 @@ module.exports = {
   getCourseById,
   // getAllCourses,
   getChapterVideo,
-  deleteCourse
+  deleteCourse,
+  markChapterRead
 }
