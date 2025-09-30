@@ -87,7 +87,7 @@ function Home() {
   }
 
 
-  if (!currentUser) return <div>Loading user...</div>;
+  if (!currentUser) return <div>Loading </div>;
 
 
   return (

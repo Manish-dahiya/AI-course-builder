@@ -351,7 +351,7 @@ Rules:
 - Preserve the meaning of the chapter content.
 - Ensure the correct answerIndex corresponds to the right option.
 - Options must be non-trivial and plausible.
-- Keep Markdown formatting (like **bold**, _italic_) inside the strings if it helps readability.
+
 `;
 
 //---------------------------------------------------------------

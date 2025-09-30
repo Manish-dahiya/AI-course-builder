@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 
 
 
@@ -7,10 +8,11 @@ function ChapterMcqs({selectedChapter}) {
   const handleOptionClick = (qidx, opIdx) => {
     setAnswers((prev) => ({ ...prev, [qidx]: opIdx }))
   }
+  
 
   return (
     <>
-      {selectedChapter?.questions ?
+      {selectedChapter?.questions?.length>0 ?
         <div className="w-full min-h-96 p-2 sm:p-6 bg-[#a6aebe] text-black text-start rounded">
           <h2 className="markdown-h2 text-center">Questions</h2>
           {selectedChapter?.questions &&
@@ -21,7 +23,7 @@ function ChapterMcqs({selectedChapter}) {
                   {m.options.map((option, opIdx) => (
                     <li
                       key={opIdx}
-                      className={`markdown-li border border-blue-600 rounded p-1 sm:p-2 my-1 bg-[#a0a6b4] cursor-pointer
+                      className={` text-small sm:markdown-li border border-blue-600 rounded p-1    sm:p-2 my-1  bg-[#a0a6b4] cursor-pointer
                     ${answers[qidx] !== undefined ? opIdx == m.answerIndex ? "border-green-600  bg-green-700 " : "border-red-600" : ""}
                   `}
                       onClick={() => handleOptionClick(qidx, opIdx)}
