@@ -59,6 +59,7 @@ function CoursePage() {
 
     //this will be called in sidebar 
     const fetchChapterContent = async (chapter, openModuleIndex, chapIndex, courseData = course) => {
+        setIsQuestions(false); //<---set the questions div false by default.
         setSelectedChapter(chapter);
 
         setIsLoading(true)
@@ -129,19 +130,20 @@ function CoursePage() {
     }
 
     const fetchChapterQuestions=async()=>{
+        setIsQuestions((prev=>!prev));
         if ( selectedChapter?.questions?.length == 0) {
 
             const res = await fetch(`${API_BASE_URL}/api/courses/chapter/questions/${selectedChapter?._id}`)
             const data = await res.json();
-            console.log("yes questions fetched!!", data);
+            
             setCourse(data.course);
             setSelectedChapter(data.chapter);
         }
-        setIsQuestions((prev=>!prev));
     }
 
 
     useEffect(() => {
+      
         fetchCourse();
     }, [id]);
 
@@ -271,7 +273,7 @@ function CoursePage() {
                                 ${isQuestions ? "max-h-[1000px] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-5"}
                                 `}
                             >
-                                <ChapterMcqs />
+                                <ChapterMcqs selectedChapter={selectedChapter} />
                             </div>
 
                         }
