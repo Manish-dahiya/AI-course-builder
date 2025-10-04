@@ -5,10 +5,11 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Course = require("../models/course.model");
 const ytSearch = require('yt-search');
 const User = require("../models/user.model");
+const { getChannel } = require("../queues");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Helper: build structured prompt for Gemini
+// Helperw: build structured prompt for Gemini
 const buildPrompt = (topic) => `
 You are a course generator AI.
 Always output a JSON structure with:
@@ -45,48 +46,42 @@ async function generateCoursePlan(req, res) {
         message: "I am unable to do that, because I can only build courses.",
       });
     }
+    console.log("entered course controller")
 
-    console.log("generating");
-    // Call Gemini only if it's a course request
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); //you can have a loop for different models if one rate-limits exceeds ,gemin-1.5 flash is one such.
+    // --- CREATE A TEMPORARY REPLY QUEUE ---
+    const replyQueue = `course_reply_${Date.now()}`;
+    const channel = getChannel();
+    await channel.assertQueue(replyQueue, { exclusive: true });
 
-    const result = await model.generateContent(buildPrompt(prompt));
-    const text = result.response.text();
+    // Consume the reply queue for the result
+    channel.consume(
+      replyQueue,
+      msg => {
+        if (msg !== null) {
+          const result = JSON.parse(msg.content.toString());
+          res.status(201).json({ coursePlan: result });
+          channel.deleteQueue(replyQueue); // cleanup
+        }
+      },
+      { noAck: true }
+    );
 
-    //clean the data    
-    const raw = text;
-    const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-    const courseData = JSON.parse(cleaned);
+    // --- SEND JOB TO course_creation QUEUE ---
+    const jobData = {
+      prompt,
+      userId: userId.toString(),
+      replyQueue,
+    };
 
-
-    // save the data to mongo db
-    // for (let i = 0; i < courseData.modules.length; i++) {
-    //   for (let j = 0; j < courseData.modules[i].chapters.length; j++) {
-
-    //     courseData.modules[i].chapters[j].aiContent = "";
-    //   }
-    // }
-
-
-    courseData.userPrompt = prompt;
-    courseData.userId = userId
-    const db_response = await Course.create(courseData);
-
-    console.log("new course created:", db_response);
-
-
-    const currUser = await User.findOne({ _id: userId });
-    currUser.courses.push(db_response._id);
-    await currUser.save();
-
-
-
-    //response
-    res.status(201).json({ coursePlan: db_response });
+    channel.sendToQueue(
+      "course_creation",
+      Buffer.from(JSON.stringify(jobData)),
+      { persistent: true }
+    );
 
   } catch (error) {
     console.error(error);
-    res.status(400).json({ error: "Something went wrong." });
+    res.status(400).json({ error });
   }
 }
 
