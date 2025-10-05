@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { useAuth0 } from "@auth0/auth0-react";
 import { API_BASE_URL } from '../utility/helper';
 import { socket } from '../utility/socket';
+import toast from 'react-hot-toast';
 
 
 export const UserContext = createContext();
@@ -13,7 +14,7 @@ function UserContextProvider({ children }) {
         return guest ? JSON.parse(guest) : null;
     });
 
-    // ✅ connect socket when user changes (real or guest)
+    //  connect socket when user changes (real or guest)
     useEffect(() => {
         if (!currentUser) return;
 
@@ -22,11 +23,10 @@ function UserContextProvider({ children }) {
 
         // register user or guest
         socket.emit("register", currentUser._id);
-        console.log("🧠 Registered socket for:", currentUser._id);
+        // console.log(" Registered socket for:", currentUser._id);
 
         const handleCourseReady = (data) => {
-            alert("Your course is ready!");
-            console.log("Course ready event:", data);
+            toast.success('Course is ready!');
         };
 
         socket.on("courseReady", handleCourseReady);
@@ -34,7 +34,7 @@ function UserContextProvider({ children }) {
 
         return () => {
             socket.disconnect();
-            console.log("Socket disconnected");
+            // console.log("Socket disconnected");
             socket.off("courseReady", handleCourseReady);
 
         };
@@ -104,7 +104,7 @@ function UserContextProvider({ children }) {
         if (res.ok) {
             setAllReviews([newReview, ...allReviews]); // update instantly
             const data = await res.json();
-            console.log(data.message);
+            toast.success(data.message);
             // fetchAllReviews(); // sync with DB
 
         }

@@ -32,46 +32,53 @@ async function loginUser(req, res) {
 
 async function deleteUser(req, res) {
     try {
-    const { id } = req.params;
+        const { id } = req.params;
 
-    // Check if user exists
-    const userToDelete = await User.findById(id);
-    if (!userToDelete) {
-      return res.status(404).json({ message: "User not found" });
-    }
+        // Check if user exists
+        const userToDelete = await User.findById(id);
+        if (!userToDelete) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-    // Optionally: delete all courses created by this user
-    await Course.deleteMany({ userId: id });
+        // Optionally: delete all courses created by this user
+        await Course.deleteMany({ userId: id });
 
-    // Delete the user
-    await User.findByIdAndDelete(id);
+        // Delete the user
+        await User.findByIdAndDelete(id);
 
-    console.log("user deleted successfully")
+        console.log("user deleted successfully")
 
-    res.status(200).json({ message: "User and their courses deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Server error while deleting user" });
-  }
-}
-
-async function WriteUserReview(req,res){
-    const {review}= req.body;
-    try {
-        const response= await Review.create(review);
-        console.log("review saved:",response);
-
-        return res.json({"message":"review posted successfully"});
+        res.status(200).json({ message: "User and their courses deleted successfully" });
     } catch (error) {
-        console.log(error);
-        return res.json({"message":error?.errorResponse?.errmsg})
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Server error while deleting user" });
     }
 }
 
-async function fetchAllReviews(req,res){
+async function WriteUserReview(req, res) {
+    const { review } = req.body;
     try {
-        const response= await Review.find().sort({ createdAt: -1 }).limit(6); //top 6 newest reviews
-        return res.json({"all_reviews":response});
+        const response = await Review.create(review);
+        console.log("review saved:", response);
+
+        return res.json({ "message": "review posted successfully" });
+    } catch (err) {
+        // Handle Mongo duplicate key error
+        if (err.code === 11000) {
+            return res.json({
+                message: "Duplicate review detected. You have already submitted a review.",
+            });
+        }
+
+        console.error("Error adding review:", err);
+        return res.status(500).json({ message: "Something went wrong" });
+    }
+}
+
+async function fetchAllReviews(req, res) {
+    try {
+        const response = await Review.find().sort({ createdAt: -1 }).limit(6); //top 6 newest reviews
+        return res.json({ "all_reviews": response });
     } catch (error) {
         console.log(error)
     }

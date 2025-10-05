@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../src/utility/helper';
 import { UserContext } from '../src/contexts/UserContextProvider';
+import toast from 'react-hot-toast';
 
 
 function CourseCard({ courseData, allCourses, setAllCourses }) {
@@ -17,8 +18,8 @@ function CourseCard({ courseData, allCourses, setAllCourses }) {
 
     const res = await fetch(`${API_BASE_URL}/api/courses/delete-course/${courseData._id}`)
     if (res.ok) {
-      const data = res.json();
-      console.log("response is ok", data.message);
+      const data =await res.json();
+      toast.success(data.message);
       if (currentUser?._id == "guestId") {
         
         const guestObj = { userName: "Guest", _id: "guestId", courses: updatedCourses };

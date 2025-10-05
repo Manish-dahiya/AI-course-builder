@@ -217,7 +217,7 @@ async function getChapterContent(req, res) {
     { persistent: true }
   );
 
-  console.log("📤 Chapter generation job queued");
+  console.log("Chapter generation job queued");
  } catch (error) {
      console.error(error);
     return res.status(400).json({ error });

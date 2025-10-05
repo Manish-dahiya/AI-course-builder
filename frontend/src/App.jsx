@@ -9,11 +9,14 @@ import Home from '../pages/Home';
 import CoursePage from '../pages/CoursePage';
 import LoginPage from '../pages/LoginPage';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { Toaster } from 'react-hot-toast';
+
 
 function App() {
 
   return (
     <>
+      <Toaster position="top-center" />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
