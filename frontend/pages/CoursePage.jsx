@@ -12,6 +12,7 @@ import { API_BASE_URL } from '../src/utility/helper.js';
 import GenerateAudio from '../components/GenerateAudio.jsx';
 import AudioLoader from '../components/AudioLoader.jsx';
 import ChapterMcqs from '../components/ChapterMcqs.jsx';
+import toast from 'react-hot-toast';
 
 function CoursePage() {
     const { id } = useParams();
@@ -42,7 +43,7 @@ function CoursePage() {
     //-------
 
 
-    const fetchCourse = async () => {
+    const fetchCourse = async (s) => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/courses/${id}`);
             if (res.ok) {
@@ -123,7 +124,9 @@ function CoursePage() {
                     ...prev,
                     isRead: !prev?.isRead
                 }));
+                
             }
+            else toast.success("chapter marked ");
         } catch (error) {
             console.log(error)
         }
@@ -263,7 +266,7 @@ function CoursePage() {
                                     {expanded ? 'Read Less' : 'Read More...'}
                                 </button>
                             )}
-                            <button className='mb-3 border border-white p-2 rounded  mt-1 sm:w-1/4' onClick={handleMarkAsRead} >{selectedChapter?.isRead ? "completed" : "Mark as read"} </button>
+                            <button className='px-1 py-1 sm:px-4 sm:py-2 text-small border-blue-600 sm:text-sm bg-green-600 text-white rounded shadow hover:bg-green-700' onClick={handleMarkAsRead} >{selectedChapter?.isRead ? "completed" : "Mark as read"} </button>
                         </footer>
 
                         <button onClick={fetchChapterQuestions} className="px-1 py-1 sm:px-4 sm:py-2 text-small sm:text-sm bg-blue-600 text-white rounded shadow hover:bg-blue-700">Questions</button>

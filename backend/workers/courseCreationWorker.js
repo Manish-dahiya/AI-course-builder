@@ -7,29 +7,55 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
+// const buildPrompt = (topic) => `
+// You are a course generator AI.
+// Always output a JSON structure with:
+// {
+//   "courseName": "string",
+//   "modules": [
+//     {
+//       "title": "string",
+//       "chapters": [
+//         {"title": "string", "summary": "string",aiContent:"" }
+//       ]
+//     }
+//   ]w
+// }
+
+// Topic: ${topic}
+// `;
+
+
 const buildPrompt = (topic) => `
-You are a course generator AI.
-Always output a JSON structure with:
+You are an expert course generator AI.
+Your task is to create a structured course on the following topic: "${topic}".
+Strict constraints:
+1. The course must have **at most 4 modules**.
+2. Each module must contain **at most 3 chapters**.
+3. Do not include anything outside the JSON structure.
+
+
+ Output instructions:
+- Always provide a valid JSON structure ONLY in this format:
 {
   "courseName": "string",
   "modules": [
     {
       "title": "string",
       "chapters": [
-        {"title": "string", "summary": "string",aiContent:"" }
+        {
+          "title": "string",
+          "summary": "string",
+          "aiContent": ""
+        }
       ]
     }
-  ]w
+  ]
 }
 
-Topic: ${topic}
 `;
 
-
-async function startCourseWorker(channel) {
-    // await mongoose.connect(process.env.MONGO_URI);
-    // console.log("Worker connected to MongoDB ✅");
-
+async function startCourseWorker(channel) { 
 
     channel.consume("course_creation", async msg => {
         try {

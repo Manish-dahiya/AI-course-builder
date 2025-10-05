@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 function SideBar({ selectedChapter, openModuleIndex  ,setOpenModuleIndex, course, fetchChapterContent, setShowSidebar, showSidebar }) {
     const toggleModule = (index) => {
-        setOpenModuleIndex(openModuleIndex === index ? null : index);
+        setOpenModuleIndex(openModuleIndex === index ? index : index);
     };
 
     const onSelectChapter = async (chapter, chapIndex) => {
