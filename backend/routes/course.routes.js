@@ -1,10 +1,12 @@
 const express= require("express");
 const router= express.Router();
 
-const {generateCoursePlan,getChapterContent,getCourseById,getAllCourses,getChapterVideo,deleteCourse,markChapterRead ,getChapterQuestions}= require("../controllers/course.controller.js");
+const {generateCoursePlan,getChapterContent,getCourseById,getAllCourses,getChapterVideo,deleteCourse,markChapterRead ,getChapterQuestions,notifyCourseReady}= require("../controllers/course.controller.js");
 const {generateChapterAudio}= require("../controllers/translationController.js")
 
 router.post("/generate-course",generateCoursePlan);
+router.post("/notify-ready", notifyCourseReady);
+
 router.post("/chapter",getChapterContent);
 router.post("/chapter/get-chapter-video", getChapterVideo );//<----
 router.post("/chapter/get-chapter-audio",generateChapterAudio)

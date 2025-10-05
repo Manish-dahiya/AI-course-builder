@@ -6,27 +6,59 @@ const Course = require("../models/course.model");
 const ytSearch = require('yt-search');
 const User = require("../models/user.model");
 const { getChannel } = require("../queues");
+const { getIo } = require("../socket.js");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helperw: build structured prompt for Gemini
+// const buildPrompt = (topic) => `
+// You are a course generator AI.
+// Always output a JSON structure with:
+// {
+//   "courseName": "string",
+//   "modules": [
+//     {
+//       "title": "string",
+//       "chapters": [
+//         {"title": "string", "summary": "string",aiContent:"" }
+//       ]
+//     }
+//   ]
+// }
+
+// Topic: ${topic}
+// `;
+
 const buildPrompt = (topic) => `
-You are a course generator AI.
-Always output a JSON structure with:
+You are an expert course generator AI.
+Your task is to create a structured course on the following topic: "${topic}".
+Strict constraints:
+1. The course must have **at most 4 modules**.
+2. Each module must contain **at most 3 chapters**.
+3. Do not include anything outside the JSON structure.
+
+
+⚡ Output instructions:
+- Always provide a valid JSON structure ONLY in this format:
 {
   "courseName": "string",
   "modules": [
     {
       "title": "string",
       "chapters": [
-        {"title": "string", "summary": "string",aiContent:"" }
+        {
+          "title": "string",
+          "summary": "string",
+          "aiContent": ""
+        }
       ]
     }
   ]
 }
 
-Topic: ${topic}
 `;
+
+
 
 async function generateCoursePlan(req, res) {
   try {
@@ -46,7 +78,6 @@ async function generateCoursePlan(req, res) {
         message: "I am unable to do that, because I can only build courses.",
       });
     }
-    console.log("entered course controller")
 
     // --- CREATE A TEMPORARY REPLY QUEUE ---
     const replyQueue = `course_reply_${Date.now()}`;
@@ -139,7 +170,7 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
         return "";
       }
 
-      return data.choices[0].message.content; 
+      return data.choices[0].message.content;
 
     } catch (err) {
       console.error(`Error with model ${model}:`, err);
@@ -152,40 +183,70 @@ async function chapterCall(courseTitle, moduleTitle, chapterTitle, userPrompt = 
 }
 
 async function getChapterContent(req, res) {
+ try {
+   const { courseId ,moduleId,chapterId} = req.body;
+  
+  //-----------------push the job to the high_priority_resource queue-------------------------
+  const replyQueue = `chapter_reply_${Date.now()}`;
+  const channel = getChannel();
+  await channel.assertQueue(replyQueue, { exclusive: true });
 
-  const course = await Course.findById(req.body.courseId);
-  if (!course) return res.status(404).json({ error: "Course not found" });
+  // Consume the reply queue for the result
+  channel.consume(
+    replyQueue,
+    msg => {
+      if (msg !== null) {
+        const result = JSON.parse(msg.content.toString());
+        channel.deleteQueue(replyQueue); // cleanup
+        return res.json({ course: result });
+      }
+    },
+    { noAck: true }
+  );
 
-  const moduleIndex = course.modules.findIndex(mod => mod._id.toString() === req.body.moduleId);
-  if (moduleIndex === -1) return res.status(404).json({ error: "module not found" });
+  const job = {
+    courseId,
+    moduleId,
+    chapterId,
+    replyQueue
+  };
 
-  const chapterIndex = course.modules[moduleIndex].chapters.findIndex(ch => ch._id.toString() === req.body.chapterId);
-  if (chapterIndex === -1) return res.status(404).json({ error: "Chapter not found" });
+  channel.sendToQueue(
+    "high_priority_resources",
+    Buffer.from(JSON.stringify(job)),
+    { persistent: true }
+  );
 
-  const chapter = course.modules[moduleIndex].chapters[chapterIndex];
+  console.log("📤 Chapter generation job queued");
+ } catch (error) {
+     console.error(error);
+    return res.status(400).json({ error });
+ }
+}
 
 
-  if (chapter.aiContent.length > 0) {
-    console.log("2:", chapter);
-    return res.json({
-      course
-    });
+const notifyCourseReady = async (req, res) => {
+  const { userId, courseId } = req.body;
+  const io = getIo();
+
+  console.log(`🔔 Received notification: Course ${courseId} ready for user ${userId}`);
+
+  // Check if room exists
+  const room = io.sockets.adapter.rooms.get(userId);
+  console.log(`📊 Room ${userId} has ${room?.size || 0} connected clients`);
+
+  if (!room || room.size === 0) {
+    console.log(`⚠️ WARNING: No clients in room ${userId}`);
   }
 
-  // Otherwise, call AI to generate content
-  const ai_Content = await chapterCall(course.title, course.modules[moduleIndex].title, course.modules[moduleIndex].chapters[chapterIndex].title, course?.userPrompt)
-  chapter.aiContent = ai_Content;
+  // Emit event
+  io.to(userId).emit("courseReady", { courseId });
+  console.log(`✉️ Emitted courseReady event to room ${userId}`);
+
+  res.json({ message: "Notification sent" });
+};
 
 
-
-  // Update the aiContent field in db
-  course.modules[moduleIndex].chapters[chapterIndex].aiContent = ai_Content;
-  await course.save();
-
-  res.json({
-    course
-  });
-}
 
 async function getCourseById(req, res) {
   const { id } = req.params;
@@ -298,27 +359,27 @@ async function markChapterRead(req, res) {
 }
 
 
-async function getChapterQuestions(req,res){
-  const {chapterId}= req.params;
+async function getChapterQuestions(req, res) {
+  const { chapterId } = req.params;
 
   console.log("fetching chapter questions....")
 
   const course = await Course.findOne({ "modules.chapters._id": chapterId });
 
-  if(!course){
-    return res.json({"message":"there is no course","id":chapterId});
+  if (!course) {
+    return res.json({ "message": "there is no course", "id": chapterId });
   }
 
-    let chapterFound = null;
+  let chapterFound = null;
 
-    // Loop modules and chapters
-    course.modules.forEach(module => {
-      const chapter = module.chapters.id(chapterId); // mongoose shortcut
-      if (chapter) {  // nothing but array filter logic
-        chapterFound = chapter;
-      }
-    });
-  const chapterContent= chapterFound.aiContent
+  // Loop modules and chapters
+  course.modules.forEach(module => {
+    const chapter = module.chapters.id(chapterId); // mongoose shortcut
+    if (chapter) {  // nothing but array filter logic
+      chapterFound = chapter;
+    }
+  });
+  const chapterContent = chapterFound.aiContent
   const prompt = `
 You are an expert educator.
 
@@ -349,7 +410,7 @@ Rules:
 
 `;
 
-//---------------------------------------------------------------
+  //---------------------------------------------------------------
   const models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
 
 
@@ -373,7 +434,7 @@ Rules:
       });
 
       const data = await response.json();
-     
+
       if (!response.ok) {
         console.error(`Error with model ${model}:`, data);
 
@@ -387,24 +448,24 @@ Rules:
         return "";
       }
 
-      const raw= data.choices[0].message.content;
+      const raw = data.choices[0].message.content;
       const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
       const mcqData = JSON.parse(cleaned);
 
-      console.log("data is:",mcqData);
+      console.log("data is:", mcqData);
 
       //save the questions to db as well-------------------------------------------
       course.modules.forEach(module => {
-      const chapter = module.chapters.id(chapterId); // mongoose shortcut
-      if (chapter) {  // nothing but array filter logic
-        chapter.questions = mcqData.mcq
-        chapterFound = chapter; // update ref to updated one
-      }
+        const chapter = module.chapters.id(chapterId); // mongoose shortcut
+        if (chapter) {  // nothing but array filter logic
+          chapter.questions = mcqData.mcq
+          chapterFound = chapter; // update ref to updated one
+        }
       });
 
       await course.save();
       //-----------------------------------------------------
-      return res.json({course,"chapter":chapterFound}); 
+      return res.json({ course, "chapter": chapterFound });
 
     } catch (err) {
       console.error(`Error with model ${model}:`, err);
@@ -416,6 +477,9 @@ Rules:
 module.exports = {
   generateCoursePlan,
   getChapterContent,
+  chapterCall,
+  notifyCourseReady,
+
   getCourseById,
   // getAllCourses,
   getChapterVideo,

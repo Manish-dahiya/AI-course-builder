@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useAuth0 } from "@auth0/auth0-react";
 import { API_BASE_URL } from '../utility/helper';
+import { socket } from '../utility/socket';
+
 
 export const UserContext = createContext();
 
@@ -10,6 +12,35 @@ function UserContextProvider({ children }) {
         const guest = localStorage.getItem("guestUser");
         return guest ? JSON.parse(guest) : null;
     });
+
+    // ✅ connect socket when user changes (real or guest)
+    useEffect(() => {
+        if (!currentUser) return;
+
+        // connect to socket
+        if (!socket.connected) socket.connect();
+
+        // register user or guest
+        socket.emit("register", currentUser._id);
+        console.log("🧠 Registered socket for:", currentUser._id);
+
+        const handleCourseReady = (data) => {
+            alert("Your course is ready!");
+            console.log("Course ready event:", data);
+        };
+
+        socket.on("courseReady", handleCourseReady);
+
+
+        return () => {
+            socket.disconnect();
+            console.log("Socket disconnected");
+            socket.off("courseReady", handleCourseReady);
+
+        };
+    }, [currentUser]);
+
+
 
     //user reviews section
     const [review, setReview] = useState("");

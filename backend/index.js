@@ -1,10 +1,13 @@
 const express=require("express");
 
 const app=express();
+const http = require("http"); // <- needed for Socket.IO server
+
 const dotenv=require("dotenv")
 const cors=require("cors")
 const morgan = require("morgan"); //<-------------------testing 
 const { connect } = require("./queues/index.js"); 
+const  { initSocket } = require("./socket.js");
 
 
 app.use(cors({
@@ -26,13 +29,21 @@ const userRoutes= require("./routes/user.routes.js");
 app.use("/api/courses", courseRoutes);
 app.use("/api/users", userRoutes);
 
+
+const server = http.createServer(app);
+
+// --- Initialize Socket.IO ---
+initSocket(server);
+
+
+
 async function startServer() {
     try {
         // Connect to RabbitMQ first
         await connect();
 
-        // Start Express server
-        app.listen(port, () => console.log("Server running on port 5000"));
+        // Start http  server
+        server.listen(port, () => console.log("Server running on port 5000"));
     } catch (err) {
         console.error("Failed to start server:", err);
         process.exit(1);

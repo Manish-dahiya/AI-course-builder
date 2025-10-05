@@ -4,6 +4,9 @@ const { connect } = require("../queues/index");
 
 
 const startCourseWorker = require("./courseCreationWorker.js");
+const lowPriorityWorker= require("./lowPriorityResourceWorker.js");
+const highPriorityWorker= require("./highPriorityResourceWorker.js");
+
 
 (async () => {
   try {
@@ -18,8 +21,8 @@ const startCourseWorker = require("./courseCreationWorker.js");
     // 3️ Start all workers (add more later easily)
     await Promise.all([
       startCourseWorker(channel),
-      // e.g., startQuizWorker(channel),
-      // e.g., startSummaryWorker(channel)
+      lowPriorityWorker(channel),
+      highPriorityWorker(channel)
     ]);
 
   } catch (err) {
