@@ -5,10 +5,10 @@ const { chapterCall } = require("../controllers/course.controller.js");
 async function highPriorityWorker(channel) {
     const queueName = "high_priority_resources"; 
 
-    // ✅ MUST assert queue BEFORE consuming
+    //  MUST assert queue BEFORE consuming
     await channel.assertQueue(queueName, { durable: true });
 
-    console.log("✅ HighPriority worker started");
+    console.log(" HighPriority worker started");
 
     channel.consume(queueName, async (msg) => {
         if (!msg) return;
@@ -19,21 +19,21 @@ async function highPriorityWorker(channel) {
 
             const course = await Course.findById(courseId);
             if (!course) {
-                console.error("❌ course not found:", courseId);
+                console.error(" course not found:", courseId);
                 channel.ack(msg);
                 return;
             }
 
             const moduleIndex = course.modules.findIndex(mod => mod._id.toString() === moduleId);
             if (moduleIndex === -1) {
-                console.error("❌ module not found:", moduleId);
+                console.error(" module not found:", moduleId);
                 channel.ack(msg);
                 return;
             }
 
             const chapterIndex = course.modules[moduleIndex].chapters.findIndex(ch => ch._id.toString() === chapterId);
             if (chapterIndex === -1) {
-                console.error("❌ chapter not found:", chapterId);
+                console.error(" chapter not found:", chapterId);
                 channel.ack(msg);
                 return;
             }
@@ -62,7 +62,7 @@ async function highPriorityWorker(channel) {
             // Update the aiContent field in db
             course.modules[moduleIndex].chapters[chapterIndex].aiContent = ai_Content;
             await course.save();
-            console.log("✅ Chapter content generated successfully for:", chapter.title);
+            console.log(" Chapter content generated successfully for:", chapter.title);
 
              // --- SEND RESULT BACK TO REPLY QUEUE ---
             if (replyQueue) {

@@ -12,11 +12,11 @@ const highPriorityWorker= require("./highPriorityResourceWorker.js");
   try {
     // 1️ Connect MongoDB
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Workers connected to MongoDB");
+    console.log(" Workers connected to MongoDB");
 
     // 2️ Connect RabbitMQ
     const channel = await connect();
-    console.log("✅ Workers connected to RabbitMQ");
+    console.log(" Workers connected to RabbitMQ");
 
     // 3️ Start all workers (add more later easily)
     await Promise.all([

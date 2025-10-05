@@ -10,7 +10,7 @@ let io;
     }
   });
 
-  console.log("✅ Socket.io initialized");
+  console.log(" Socket.io initialized");
 
   // ⚡ Now attach connection handler *after* initialization
   io.on("connection", (socket) => {

@@ -10,27 +10,6 @@ const { getIo } = require("../socket.js");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Helperw: build structured prompt for Gemini
-// const buildPrompt = (topic) => `
-// You are a course generator AI.
-// Always output a JSON structure with:
-// {
-//   "courseName": "string",
-//   "modules": [
-//     {
-//       "title": "string",
-//       "chapters": [
-//         {"title": "string", "summary": "string",aiContent:"" }
-//       ]
-//     }
-//   ]
-// }
-
-// Topic: ${topic}
-// `;
-
-
-
 
 async function generateCoursePlan(req, res) {
   try {
