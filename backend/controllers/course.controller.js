@@ -234,11 +234,20 @@ async function getCourseById(req, res) {
   return res.json({ "coursePlan": currentCourse });
 }
 
-// async function getAllCourses(req,res){
-//   const {userId}= req.params
-//   const allCourses= await User.findById(userId); //<--fetches all courses from the database and returns an array
-//   return res.json({"allCourses":allCourses});
-// }
+async function getAllCourses(req, res) {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).populate({ path: "courses", options: { sort: { createdAt: -1 } } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    return res.json({ courses: user.courses }); // only the courses array
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+}
+
 
 async function getChapterVideo(req, res) {
   const { courseId, moduleIndex, chapterId } = req.body;
@@ -453,7 +462,7 @@ module.exports = {
   notifyCourseReady,
 
   getCourseById,
-  // getAllCourses,
+  getAllCourses,
   getChapterVideo,
   deleteCourse,
   markChapterRead,

@@ -82,7 +82,7 @@ async function startCourseWorker(channel) {
 
 
             const currUser = await User.findOne({ _id: userId });
-            currUser.courses.push(db_response._id);
+            currUser.courses.unshift(db_response._id);
             await currUser.save();
 
             //------------------------------push it in lowPriority queue.-----------------------------------------------

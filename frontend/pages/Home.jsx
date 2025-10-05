@@ -73,8 +73,21 @@ function Home() {
 
   //api for fetching all courses
   const fetchAllCourses = async () => {
-   
-    setAllCourses(currentUser.courses);
+    
+    if (currentUser._id === "guestId") {
+        // guest user -> localStorage
+        const guestUser = JSON.parse(localStorage.getItem("guestUser"));
+        setAllCourses(guestUser?.courses || []);
+    } else {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/courses/all-courses/${currentUser._id}`);
+            const data = await res.json();
+            console.log("done")
+            setAllCourses(data.courses || []);
+        } catch (err) {
+            console.error("Error fetching courses:", err);
+        }
+    }
   }
 
   useEffect(() => {

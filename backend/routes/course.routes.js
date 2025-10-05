@@ -13,7 +13,7 @@ router.post("/chapter/get-chapter-audio",generateChapterAudio)
 router.get("/chapter/mark-as-read/:chapterId" ,markChapterRead)
 router.get("/chapter/questions/:chapterId" ,getChapterQuestions)
 router.get("/delete-course/:id",deleteCourse);
-// router.get("/all-courses/:userId", getAllCourses );
+router.get("/all-courses/:userId", getAllCourses );
 router.get("/:id",getCourseById );
 
 module.exports=router;
