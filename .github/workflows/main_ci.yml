@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-backend:
+    name: Build Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache backend npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            server/node_modules
+          key: ${{ runner.os }}-node-backend-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-backend-
+
+      - name: Install deps (server)
+        working-directory: server
+        run: npm ci
+
+      # - name: Run server tests
+      #   working-directory: server
+      #   run: npm test
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache frontend npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            frontend/node_modules
+          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-frontend-
+
+      - name: Install deps (frontend)
+        working-directory: frontend
+        run: npm ci
+
+      # - name: Run frontend tests
+      #   working-directory: frontend
+      #   run: npm test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+ 
