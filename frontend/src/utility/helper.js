@@ -109,6 +109,6 @@ export async function downloadPDF(pdfRef, chapterTitle) {
 
 
 // export const API_BASE_URL = "http://localhost:5000";
-//*************for deployed version---------------------- */
+//----------------------------------for deployed version---------------------- --------------------/
 export const API_BASE_URL = "https://ai-course-builder-backend-t3w7.onrender.com"; //for docker.
 
