@@ -1,7 +1,8 @@
 const Course = require("../models/course.model.js");
 const { chapterCall } = require("../controllers/course.controller.js");
 const axios = require("axios"); 
-
+require('dotenv').config();  
+const API_BASE_URL = process.env.API_BASE_URL;
 
 async function lowPriorityWorker(channel) {
     const queueName = "low_priority_resources"; // Use consistent queue name
@@ -39,7 +40,7 @@ async function lowPriorityWorker(channel) {
 
             //tell the backend so that ,it can emmit the event
              try {
-                await axios.post(`http://localhost:5000/api/courses/notify-ready`, {
+                await axios.post(`${API_BASE_URL}/api/courses/notify-ready`, {
                     userId,
                     courseId
                 });
