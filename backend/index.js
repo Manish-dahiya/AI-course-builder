@@ -5,7 +5,7 @@ const http = require("http"); // <- needed for Socket.IO server
 
 const dotenv=require("dotenv")
 const cors=require("cors")
-const morgan = require("morgan"); //<-------------------testing 
+// const morgan = require("morgan"); //<-------------------testing 
 const { connect } = require("./queues/index.js"); 
 const  { initSocket } = require("./socket.js");
 
@@ -21,7 +21,7 @@ const port=process.env.PORT
 
 const db=require("./dbConfig/dbConfig.js");
 app.use(express.json())
-app.use(morgan("dev")); // <---------------------for testing>
+// app.use(morgan("dev")); // <---------------------for testing>
 
 
 const courseRoutes = require("./routes/course.routes.js");

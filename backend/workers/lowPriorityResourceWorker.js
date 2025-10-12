@@ -5,9 +5,7 @@ const axios = require("axios");
 
 async function lowPriorityWorker(channel) {
     const queueName = "low_priority_resources"; // Use consistent queue name
-
-    //  MUST assert queue BEFORE consuming
-    await channel.assertQueue(queueName, { durable: true });
+    // await channel.assertQueue(queueName, { durable: true });
 
     console.log(" LowPriority worker started and waiting for background jobs...");
 

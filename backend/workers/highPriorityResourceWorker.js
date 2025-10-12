@@ -4,9 +4,7 @@ const { chapterCall } = require("../controllers/course.controller.js");
 
 async function highPriorityWorker(channel) {
     const queueName = "high_priority_resources"; 
-
-    //  MUST assert queue BEFORE consuming
-    await channel.assertQueue(queueName, { durable: true });
+    // await channel.assertQueue(queueName, { durable: true });
 
     console.log(" HighPriority worker started");
 
