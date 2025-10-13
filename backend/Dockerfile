@@ -13,6 +13,7 @@ COPY . .
 
 # Expose backend port
 EXPOSE 5000
+EXPOSE 10000
 
 # Use environment variables from .env
 # Start the server

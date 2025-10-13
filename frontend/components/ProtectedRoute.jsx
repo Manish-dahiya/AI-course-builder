@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { UserContext } from "../src/contexts/UserContextProvider";
 import { useAuth0 } from "@auth0/auth0-react";
+import LoadingScreen from "./LoadingScreen";
 
 export default function ProtectedRoute({ children }) {
   const { currentUser } = useContext(UserContext);
@@ -10,7 +11,7 @@ export default function ProtectedRoute({ children }) {
 
   // While Auth0 is checking the user, show a loader
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen/>;
   }
 
   // Check for guest user in localStorage

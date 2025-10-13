@@ -13,7 +13,7 @@ function ChapterMcqs({selectedChapter}) {
   return (
     <>
       {selectedChapter?.questions?.length>0 ?
-        <div className="w-full min-h-96 p-2 sm:p-6 bg-[#a6aebe] text-black text-start rounded">
+        <div className="w-full min-h-96 p-2  sm:p-6 bg-[#a6aebe] text-black text-start rounded">
           <h2 className="markdown-h2 text-center">Questions</h2>
           {selectedChapter?.questions &&
             selectedChapter.questions.map((m, qidx) => (

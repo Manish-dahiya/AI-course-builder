@@ -29,7 +29,7 @@ const highPriorityWorker= require("./highPriorityResourceWorker.js");
     // 4️ Dummy express server (for Render port binding)
     const app = express();
     app.get("/", (req, res) => res.send("Worker service running."));
-    const PORT = process.env.PORT || 10000; // Render will inject PORT automatically
+    const PORT =  10000; 
     app.listen(PORT, () => console.log(`🌐 Worker listening on port ${PORT}`));
 
 

@@ -13,6 +13,7 @@ import GenerateAudio from '../components/GenerateAudio.jsx';
 import AudioLoader from '../components/AudioLoader.jsx';
 import ChapterMcqs from '../components/ChapterMcqs.jsx';
 import toast from 'react-hot-toast';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 function CoursePage() {
     const { id } = useParams();
@@ -151,11 +152,11 @@ function CoursePage() {
     }, [id]);
 
 
-    if (!course) return <div>Loading...</div>;
-
+    if (!course) return <LoadingScreen/>;
+    // return <LoadingScreen/>
 
     return (
-        <div className="flex h-screen ">
+        <div className="flex h-screen  ">
 
             {showSidebar && <div id='overlay-div-for-sidebar' onClick={() => setShowSidebar(false)}
                 style={{
@@ -179,10 +180,10 @@ function CoursePage() {
 
 
             {/* main content */}
-            <div className='text-gray-300   sm:ml-42 md:ml-72 w-full  ' >
+            <div className='text-gray-300  fade-in-down  sm:ml-42 md:ml-72 w-full  ' >
 
                 {isLoading ? <ChapterSkeletonLoader /> :
-                    <div >
+                    <div className=' pb-10' >
                         {/* <h1 className='font-bold  sm:text-4xl mb-3 '>{selectedChapter?.title || "No chapter selected"}</h1> */}
 
                         {/* youtube video functionality */}
@@ -272,7 +273,7 @@ function CoursePage() {
                         <button onClick={fetchChapterQuestions} className="px-1 py-1 sm:px-4 sm:py-2 text-small sm:text-sm bg-blue-600 text-white rounded shadow hover:bg-blue-700">Questions</button>
                         {
                             <div
-                                className={`overflow-hidden transition-all duration-500 ease-in-out
+                                className={`overflow-hidden  transition-all duration-500 ease-in-out
                                 ${isQuestions ? "max-h-[1000px] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-5"}
                                 `}
                             >

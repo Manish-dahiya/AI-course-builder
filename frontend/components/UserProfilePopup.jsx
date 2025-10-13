@@ -68,7 +68,7 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
                     X
                 </button>
             </div>
-            <p className="text-small text-gray-600">{currentUser?.userEmail ? currentUser.userEmail : "guest@gmail.com"}</p>
+            <p className="text-small text-left text-gray-600">{currentUser?.userEmail ? currentUser.userEmail : "guest@gmail.com"}</p>
 
             <button className='text-small border-b me-10 border-red-600 text-red-600     hover:text-red-800' onClick={handleProfileDelete} >delete</button>
             <button className='text-small border-b border-blue-600 text-blue-600     hover:text-blue-800' onClick={handleLogout} >logout</button>

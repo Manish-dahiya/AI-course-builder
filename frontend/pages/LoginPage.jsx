@@ -25,7 +25,7 @@ export default function LoginPage() {
     <div className="min-h-screen w-full  flex flex-col sm:flex-row gap-10 items-center justify-center bg-gray-100">
 
       <div className="flex flex-col items-center  w-1/2 order-2 sm:order-1 sm:px-3 gap-4">
-        <h1 className=" sm:text-3xl font-bold mb-8">AI Course Builder Login</h1>
+        <h1 className=" sm:text-3xl font-bold mb-8">PromptCourse Login</h1>
         <button
           onClick={() => loginWithRedirect()}
           className="text-small px-1 sm:px-6 py-1 sm:py-2 w-1/2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -37,16 +37,16 @@ export default function LoginPage() {
           onClick={() =>
             loginWithRedirect({ screen_hint: "signup" })
           }
-          className="text-small px-1 sm:px-6  py-1 sm:py-2 w-1/2 bg-[#7cb1ff] text-white rounded hover:bg-green-700"
+          className="text-small px-1 sm:px-6  py-1 sm:py-2 w-1/2 bg-[#7cb1ff] text-white rounded hover:bg-blue-400"
         >
           Signup
         </button>
 
         <button
           onClick={handleGuestLogin}
-          className="text-small px-1 sm:px-6 py-1 sm:py-2 w-1/2 bg-gray-600 text-white rounded hover:bg-gray-700"
+          className=" text-small px-1 sm:px-6 py-1 sm:py-2 w-1/2 bg-gray-600 text-white rounded hover:bg-gray-700"
         >
-          Continue as Guest
+           Guest
         </button>
       </div>
 

@@ -12,6 +12,7 @@ import UserProfilePopup from '../components/UserProfilePopup';
 import userIcon from "../src/assets/userIcon.png"
 import no_data_gif from "../src/assets/no-data.gif"
 import UsersReviews from '../components/UsersReviews';
+import LoadingScreen from '../components/LoadingScreen';
 
 function Home() {
   const { currentUser ,setCurrentUser} = useContext(UserContext);
@@ -100,11 +101,11 @@ function Home() {
   }
 
 
-  if (!currentUser) return <div>Loading </div>;
-
+  if (!currentUser) return <LoadingScreen/>;
+  
 
   return (
-    <div className='bg-blue-100 rounded-4xl p-3'>
+    <div className='bg-blue-100 rounded-4xl p-3 fade-in-down'>
       <UserProfilePopup profilePopup={profilePopup} setProfilePopup={setProfilePopup} />
 
 
@@ -113,7 +114,7 @@ function Home() {
         {/* user profile icon */}
         <div className=' sm:h-16 flex justify-between items-center'>
           <div> </div>
-          <h1 className="text-xl font-bold  sm:mb-4 text-center">AI Course Builder</h1>
+          <h1 className="text-xl font-bold  sm:mb-4 text-center"> Generate Course</h1>
 
           <button className='h-10 w-10 rounded-full border border-gray-600' onClick={() => setProfilePopup(!profilePopup)} >
             <img src={userIcon} alt="" />
