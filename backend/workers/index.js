@@ -25,6 +25,13 @@ const highPriorityWorker= require("./highPriorityResourceWorker.js");
       highPriorityWorker(channel)
     ]);
 
+    // 4️ Dummy express server (for Render port binding)
+    const app = express();
+    app.get("/", (req, res) => res.send("Worker service running."));
+    const PORT = process.env.PORT || 10000; // Render will inject PORT automatically
+    app.listen(PORT, () => console.log(`🌐 Worker listening on port ${PORT}`));
+
+
   } catch (err) {
     console.error(" Worker startup failed:", err);
     process.exit(1);
