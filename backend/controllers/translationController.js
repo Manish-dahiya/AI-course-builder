@@ -228,17 +228,21 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Optional translation function
 function getTranslationPrompt(text, language) {
   switch (language) {
-    case "english": return `Translate the following text to English:\n\n${text}`;
-    case "hindi": return `Translate the following text to Hindi:\n\n${text}`;
-    case "hinglish": return `Translate the following text to Hinglish (Latin script, mix Hindi + English naturally):\n\n${text}`;
-    case "chinese": return `Translate the following text to chinese :\n\n${text}`;
-    case "tamil": return `Translate the following text to tamil :\n\n${text}`;
-    default: return text;
+    case "english":
+      return `Convert the following Markdown text into plain, natural English. Keep only the content, and remove all Markdown formatting (like *, **, #, etc.). Output only the cleaned text:\n\n${text}`;
+    case "hindi":
+      return `Convert the following Markdown text into plain, natural Hindi. Keep only the content, and remove all Markdown formatting (like *, **, #, etc.). Output only the cleaned text:\n\n${text}`;
+    case "hinglish":
+      return `Convert the following Markdown text into plain, natural Hinglish (Latin script, mix of Hindi + English). Remove all Markdown formatting symbols (like **, #, *, etc.) and output only the text:\n\n${text}`;
+    case "tamil":
+      return `Convert the following Markdown text into plain, natural Tamil. Remove all formatting symbols and output only the clean text:\n\n${text}`;
+    default:
+      return `Convert the following Markdown text into plain, natural ${language}. Remove all Markdown symbols (like **, *, #, etc.) and output only the plain text:\n\n${text}`;
   }
 }
+
 
 function getTTSLanguageCode(language) {
     switch (language.toLowerCase()) {
