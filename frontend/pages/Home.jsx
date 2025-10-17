@@ -13,6 +13,8 @@ import userIcon from "../src/assets/userIcon.png"
 import no_data_gif from "../src/assets/no-data.gif"
 import UsersReviews from '../components/UsersReviews';
 import LoadingScreen from '../components/LoadingScreen';
+import { socket } from '../src/utility/socket';
+
 
 function Home() {
   const { currentUser ,setCurrentUser} = useContext(UserContext);
@@ -24,58 +26,129 @@ function Home() {
   const [allCourses, setAllCourses] = useState([]);
   const [profilePopup, setProfilePopup] = useState(false);
 
-  //api for building the course
-  const handleBuildCourse = async () => {
-    if (!prompt) return alert("Please enter a course idea!");
+  // //api for building the course
+  // const handleBuildCourse = async () => {
+  //   if (!prompt) return alert("Please enter a course idea!");
 
-    try {
-      setIsLoading(true)
+  //   try {
+  //     setIsLoading(true)
 
-      const res = await fetch(`${API_BASE_URL}/api/courses/generate-course`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ "prompt": prompt, "userId": currentUser?._id })
+  //     const res = await fetch(`${API_BASE_URL}/api/courses/generate-course`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify({ "prompt": prompt, "userId": currentUser?._id })
 
-      });
+  //     });
 
-      if (res.status == 400) throw new Error("Failed to generate course");
+  //     if (res.status == 400) throw new Error("Failed to generate course");
 
-      const data = await res.json();
-      console.log("data.coursePlan:", data.coursePlan);
+  //     const data = await res.json();
+  //     console.log("data.coursePlan:", data.coursePlan);
 
-      // setCourseData(data)
-      //prepend this in allCourses
-      setAllCourses(prev => [data.coursePlan, ...(Array.isArray(prev) ? prev : [])]);
-      if(currentUser?._id=="guestId"){
-         const guestUser = JSON.parse(localStorage.getItem("guestUser")) || {
-        userName: "Guest",
-        _id: "guestId",
-        courses: []
-      };
+  //     // setCourseData(data)
+  //     //prepend this in allCourses
+  //     setAllCourses(prev => [data.coursePlan, ...(Array.isArray(prev) ? prev : [])]);
+  //     if(currentUser?._id=="guestId"){
+  //        const guestUser = JSON.parse(localStorage.getItem("guestUser")) || {
+  //       userName: "Guest",
+  //       _id: "guestId",
+  //       courses: []
+  //     };
 
-      guestUser.courses.push(data.coursePlan); // add new course
-      localStorage.setItem("guestUser", JSON.stringify(guestUser));
+  //     guestUser.courses.push(data.coursePlan); // add new course
+  //     localStorage.setItem("guestUser", JSON.stringify(guestUser));
 
-      // Update currentUser state as well to reflect changes in UI
-      setCurrentUser(guestUser);
+  //     // Update currentUser state as well to reflect changes in UI
+  //     setCurrentUser(guestUser);
+  //     }
+
+  //   }
+  //   catch (error) {
+  //     console.error("frontend error :", error);
+  //     alert("Something went wrong while building the course");
+  //   }
+
+  //   setIsLoading(false);
+  //   setPrompt("");
+  // };
+
+
+  // Inside your component
+
+  useEffect(() => {
+  // Listen for course generation results
+  socket.on("courseGenerated", (data) => {
+    setIsLoading(false);
+
+    if (data.success) {
+      console.log("Course generated:", data.course);
+
+      // Prepend new course to allCourses
+      setAllCourses(prev => [data.course, ...(Array.isArray(prev) ? prev : [])]);
+
+      // Update guest user in localStorage if needed
+      if (currentUser?._id === "guestId") {
+        const guestUser = JSON.parse(localStorage.getItem("guestUser")) || {
+          userName: "Guest",
+          _id: "guestId",
+          courses: []
+        };
+        guestUser.courses.push(data.course);
+        localStorage.setItem("guestUser", JSON.stringify(guestUser));
+        setCurrentUser(guestUser);
       }
 
+    } else {
+      console.error("Course generation failed:", data.error);
+      alert("Failed to generate course: " + data.error);
     }
-    catch (error) {
-      console.error("frontend error :", error);
-      alert("Something went wrong while building the course");
-    }
+  });
 
-    setIsLoading(false);
-    setPrompt("");
+  // Clean up on unmount
+  return () => {
+    socket.off("courseGenerated");
   };
+}, [currentUser]);
+
+// Function to trigger course generation
+const handleBuildCourse = async () => {
+  if (!prompt) return alert("Please enter a course idea!");
+
+  try {
+    setIsLoading(true);
+
+    // Send request to backend with socketId
+    await fetch(`${API_BASE_URL}/api/courses/generate-course`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ 
+        prompt, 
+        userId: currentUser?._id, 
+        socketId: socket.id // Pass socket ID to backend
+      })
+    });
+
+    // We don't wait for response here — worker will emit event
+    console.log("Course generation started...");
+
+  } catch (error) {
+    console.error("frontend error :", error);
+    alert("Something went wrong while starting course generation");
+    setIsLoading(false);
+  }
+
+  setPrompt("");
+};
+
 
   //api for fetching all courses
   const fetchAllCourses = async () => {
     
-    if (currentUser._id === "guestId") {
+    if (currentUser.userName === "Guest") {
         // guest user -> localStorage
         const guestUser = JSON.parse(localStorage.getItem("guestUser"));
         setAllCourses(guestUser?.courses || []);

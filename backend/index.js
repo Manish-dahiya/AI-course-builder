@@ -6,7 +6,8 @@ const http = require("http"); // <- needed for Socket.IO server
 const dotenv=require("dotenv")
 const cors=require("cors")
 // const morgan = require("morgan"); //<-------------------testing 
-const { connect } = require("./queues/index.js"); 
+const { connect,getChannel } = require("./queues/index.js"); 
+const { startCourseReadyConsumer } = require("./controllers/course.controller.js");
 const  { initSocket } = require("./socket.js");
 
 
@@ -41,6 +42,7 @@ async function startServer() {
     try {
         // Connect to RabbitMQ first
         await connect();
+        startCourseReadyConsumer();
 
         // Start http  server
         server.listen(port, () => console.log("Server running on port 5000"));

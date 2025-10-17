@@ -12,7 +12,8 @@ export default function LoginPage() {
 
   // Guest login
   const handleGuestLogin = () => {
-    const guestObj = { userName: "Guest", _id: "guestId", courses: [] };
+    // const guestObj = { userName: "Guest", _id: "guestId", courses: [] };
+    const guestObj = { userName: "Guest", _id: "68d79e6dbd0ea980a92e5b6f", courses: [] };
 
     localStorage.setItem("guestUser", JSON.stringify(guestObj));
     setCurrentUser(guestObj); //  store as object, not raw string

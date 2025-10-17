@@ -11,7 +11,7 @@ const highPriorityWorker= require("./highPriorityResourceWorker.js");
 
 (async () => {
   try {
-    // 1️ Connect MongoDB
+    // 1️ Connect MongoDBq
     await mongoose.connect(process.env.MONGO_URI);
     console.log(" Workers connected to MongoDB");
 

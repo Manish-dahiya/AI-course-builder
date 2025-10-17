@@ -13,7 +13,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateCoursePlan(req, res) {
   try {
-    let { prompt, userId } = req.body;
+    let { prompt, userId,socketId } = req.body;
 
     // If guest, assign default guest user ID
     const GUEST_USER_ID = "68d79e6dbd0ea980a92e5b6f";
@@ -30,33 +30,56 @@ async function generateCoursePlan(req, res) {
       });
     }
 
-    // --- CREATE A TEMPORARY REPLY QUEUE ---
-    const replyQueue = `course_reply_${Date.now()}`;
-    const channel = getChannel();
-    await channel.assertQueue(replyQueue, { exclusive: true });
-
-    const timeout = setTimeout(() => {
-    res.status(504).json({ message: "Worker timeout. Try again later." });
-    channel.deleteQueue(replyQueue);
-  }, 120000); // 2 min timeout
-
-
-    // --- SEND JOB TO course_creation QUEUE ---
-    const jobData = {
+     const jobData = {
       prompt,
       userId: userId.toString(),
-      replyQueue,
+      socketId,
     };
 
+    const channel = getChannel();
     channel.sendToQueue(
       "course_creation",
       Buffer.from(JSON.stringify(jobData)),
       { persistent: true }
     );
 
+    res.status(202).json({ message: "Course generation started" });
   } catch (error) {
     console.error(error);
     res.status(400).json({ error });
+  }
+}
+
+async function startCourseReadyConsumer() {
+  try {
+    const channel = getChannel();
+    await channel.assertQueue("course_ready", { durable: true });
+
+    channel.consume("course_ready", (msg) => {
+      if (!msg) return;
+
+      try {
+        const { userId, course } = JSON.parse(msg.content.toString());
+        console.log("Course ready for user:", userId, "course:", course);
+
+        const io = getIo();
+        if (io) {
+          io.to(userId).emit("courseGenerated", {
+            success: true,
+            course,
+          });
+        }
+
+        channel.ack(msg);
+      } catch (err) {
+        console.error("Error in course_ready consumer:", err);
+        channel.ack(msg); // prevent stuck messages
+      }
+    });
+
+    console.log("Course ready consumer started...");
+  } catch (err) {
+    console.error("Failed to start course_ready consumer:", err);
   }
 }
 
@@ -438,5 +461,6 @@ module.exports = {
   getChapterVideo,
   deleteCourse,
   markChapterRead,
-  getChapterQuestions
+  getChapterQuestions,
+  startCourseReadyConsumer
 }

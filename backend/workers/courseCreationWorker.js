@@ -2,8 +2,10 @@ const mongoose = require("mongoose");
 const Course = require("../models/course.model");
 const User = require("../models/user.model");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { getIo } = require("../socket"); 
 
-// ✅ Initialize Gemini HERE in the worker
+
+//  Initialize Gemini HERE in the worker
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
@@ -55,58 +57,114 @@ Strict constraints:
 
 `;
 
+// async function startCourseWorker(channel) { 
+
+//     channel.consume("course_creation", async msg => {
+//         try {
+//             const { prompt, userId, replyQueue } = JSON.parse(msg.content.toString());
+//             console.log("Processing course creation job for user:", userId);
+
+//             console.log("generating");
+//             // Call Gemini only if it's a course request
+//             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); //you can have a loop for different models if one rate-limits exceeds ,gemin-1.5 flash is one such.
+
+//             const result = await model.generateContent(buildPrompt(prompt));
+//             const text = result.response.text();
+
+//             //clean the data    
+//             const raw = text;
+//             const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+//             const courseData = JSON.parse(cleaned);
+
+//             courseData.userPrompt = prompt;
+//             courseData.userId = userId
+//             const db_response = await Course.create(courseData);
+
+//             console.log("new course created:", db_response);
+
+
+//             const currUser = await User.findOne({ _id: userId });
+//             currUser.courses.unshift(db_response._id);
+//             await currUser.save();
+
+//             //------------------------------push it in lowPriority queue.-----------------------------------------------
+//             await channel.sendToQueue('low_priority_resources', Buffer.from(JSON.stringify({
+//                 courseId: db_response._id,
+//                 userId: userId,  // if you want to notify later
+//             })));
+
+
+
+
+//             // --- SEND BACK RESULT TO REPLY QUEUE ---
+//             channel.sendToQueue(replyQueue, Buffer.from(JSON.stringify(db_response)));
+
+//             channel.ack(msg);
+//             console.log("Course job processed successfully for user:", userId);
+
+//         } catch (err) {
+//             console.error("Error processing course creation job:", err);
+//             channel.ack(msg); // still ack to prevent stuck messages
+//         }
+//     });
+
+//     console.log("Course worker started and listening for jobs...");
+// }
+
+// module.exports = startCourseWorker;
+
+
+
 async function startCourseWorker(channel) { 
+  channel.consume("course_creation", async (msg) => {
+    try {
+      const { prompt, userId } = JSON.parse(msg.content.toString());
+      console.log("Processing course creation job for user:", userId);
 
-    channel.consume("course_creation", async msg => {
-        try {
-            const { prompt, userId, replyQueue } = JSON.parse(msg.content.toString());
-            console.log("Processing course creation job for user:", userId);
+      console.log("Generating course...");
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const result = await model.generateContent(buildPrompt(prompt));
+      const text = result.response.text();
 
-            console.log("generating");
-            // Call Gemini only if it's a course request
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); //you can have a loop for different models if one rate-limits exceeds ,gemin-1.5 flash is one such.
+      // Clean and parse AI response
+      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const courseData = JSON.parse(cleaned);
 
-            const result = await model.generateContent(buildPrompt(prompt));
-            const text = result.response.text();
+      courseData.userPrompt = prompt;
+      courseData.userId = userId;
 
-            //clean the data    
-            const raw = text;
-            const cleaned = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-            const courseData = JSON.parse(cleaned);
+      // Save course to DB
+      const db_response = await Course.create(courseData);
+      console.log("New course created:", db_response);
 
-            courseData.userPrompt = prompt;
-            courseData.userId = userId
-            const db_response = await Course.create(courseData);
+      // Add course to user's course list
+      const currUser = await User.findOne({ _id: userId });
+      currUser.courses.unshift(db_response._id);
+      await currUser.save();
 
-            console.log("new course created:", db_response);
+      // Push course ID to low-priority queue for later tasks
+      await channel.sendToQueue(
+        "low_priority_resources",
+        Buffer.from(JSON.stringify({ courseId: db_response._id, userId }))
+      );
 
+      // --- PUBLISH to course_ready queue (backend will emit via Socket.IO) ---
+      await channel.assertQueue("course_ready", { durable: true });
+      await channel.sendToQueue(
+        "course_ready",
+        Buffer.from(JSON.stringify({ userId, course: db_response }))
+      );
 
-            const currUser = await User.findOne({ _id: userId });
-            currUser.courses.unshift(db_response._id);
-            await currUser.save();
+      channel.ack(msg);
+      console.log("Course job processed successfully for user:", userId);
 
-            //------------------------------push it in lowPriority queue.-----------------------------------------------
-            await channel.sendToQueue('low_priority_resources', Buffer.from(JSON.stringify({
-                courseId: db_response._id,
-                userId: userId,  // if you want to notify later
-            })));
+    } catch (err) {
+      console.error("Error processing course creation job:", err);
+      channel.ack(msg); // prevent stuck messages
+    }
+  });
 
-
-
-
-            // --- SEND BACK RESULT TO REPLY QUEUE ---
-            channel.sendToQueue(replyQueue, Buffer.from(JSON.stringify(db_response)));
-
-            channel.ack(msg);
-            console.log("Course job processed successfully for user:", userId);
-
-        } catch (err) {
-            console.error("Error processing course creation job:", err);
-            channel.ack(msg); // still ack to prevent stuck messages
-        }
-    });
-
-    console.log("Course worker started and listening for jobs...");
+  console.log("Course worker started and listening for jobs...");
 }
 
 module.exports = startCourseWorker;

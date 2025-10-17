@@ -38,9 +38,9 @@ function UserProfilePopup({ profilePopup, setProfilePopup }) {
     }
 
     const handleLogout = () => {
-        if (currentUser?._id === "guestId") {
+        if (currentUser?.userName === "Guest") {
             console.log("Guest logout triggered");
-            localStorage.removeItem("guestUser"); // ✅ match the actual key
+            localStorage.removeItem("guestUser"); //  match the actual key
             navigate("/login");
         } else {
             console.log("Auth0 logout triggered");
