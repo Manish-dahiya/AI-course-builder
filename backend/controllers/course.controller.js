@@ -35,18 +35,11 @@ async function generateCoursePlan(req, res) {
     const channel = getChannel();
     await channel.assertQueue(replyQueue, { exclusive: true });
 
-    // Consume the reply queue for the result
-    channel.consume(
-      replyQueue,
-      msg => {
-        if (msg !== null) {
-          const result = JSON.parse(msg.content.toString());
-          res.status(201).json({ coursePlan: result });
-          channel.deleteQueue(replyQueue); // cleanup
-        }
-      },
-      { noAck: true }
-    );
+    const timeout = setTimeout(() => {
+    res.status(504).json({ message: "Worker timeout. Try again later." });
+    channel.deleteQueue(replyQueue);
+  }, 120000); // 2 min timeout
+
 
     // --- SEND JOB TO course_creation QUEUE ---
     const jobData = {
